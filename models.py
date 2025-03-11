@@ -129,16 +129,17 @@ class DBManager:
             self.disconnect() 
 
     # 회원 정보 변경
-    def update_user_info(self, userid, email, address):
+    def update_user_info(self, userid, username, email, address):
         try:
             self.connect()  # DB 연결
             sql= """
             UPDATE users
-            SET email = %s,
+            SET user_name=%s,
+            email = %s,
             address = %s
             WHERE user_id = %s
             """
-            values = (email, address, userid)
+            values = (username, email, address, userid)
             self.cursor.execute(sql, values)
             self.connection.commit()  # 모든 데이터 가져오기
             print("회원정보가 수정되었습니다.")
@@ -205,7 +206,7 @@ class DBManager:
         if search_type == "street_light_id":
             sql = """
             SELECT * FROM street_lights 
-            WHERE street_light_id LIKE %s 
+            WHERE street_light_id LIKE %s and purpose = "도로"
             LIMIT %s OFFSET %s
             """
             values = (f"%{search_query}%", per_page, offset)
@@ -213,14 +214,14 @@ class DBManager:
         elif search_type == "street_light_location":
             sql = """
             SELECT * FROM street_lights 
-            WHERE location LIKE %s 
+            WHERE location LIKE %s and purpose = "도로"
             LIMIT %s OFFSET %s
             """
             values = (f"%{search_query}%", per_page, offset)
         else:  # all 또는 기본값
             sql = """
             SELECT * FROM street_lights 
-            WHERE location LIKE %s OR street_light_id LIKE %s 
+            WHERE (location LIKE %s OR street_light_id LIKE %s) and purpose = "도로"
             LIMIT %s OFFSET %s
             """
             values = (f"%{search_query}%", f"%{search_query}%", per_page, offset)
@@ -232,21 +233,21 @@ class DBManager:
         if search_type == "street_light_id":
             sql = """
             SELECT COUNT(*) AS total FROM street_lights 
-            WHERE street_light_id LIKE %s
+            WHERE street_light_id LIKE %s and purpose = "도로"
             """
             values = (f"%{search_query}%",)
         
         elif search_type == "street_light_location":
             sql = """
             SELECT COUNT(*) AS total FROM street_lights 
-            WHERE location LIKE %s
+            WHERE location LIKE %s and purpose = "도로"
             """
             values = (f"%{search_query}%",)
         
         else:  # all 또는 기본값
             sql = """
             SELECT COUNT(*) AS total FROM street_lights 
-            WHERE location LIKE %s OR street_light_id LIKE %s
+            WHERE (location LIKE %s OR street_light_id LIKE %s) and purpose = "도로"
             """
             values = (f"%{search_query}%", f"%{search_query}%")
         
@@ -277,6 +278,59 @@ class DBManager:
         finally:
             self.disconnect()
   
+    # 인도용 CCTV 검색 및 페이지네이션
+    def get_sidewalk_cctv_query(self, search_query, search_type, per_page, offset):
+        if search_type == "street_light_id":
+            sql = """
+            SELECT * FROM street_lights 
+            WHERE street_light_id LIKE %s and purpose = "인도"
+            LIMIT %s OFFSET %s
+            """
+            values = (f"%{search_query}%", per_page, offset)
+
+        elif search_type == "street_light_location":
+            sql = """
+            SELECT * FROM street_lights 
+            WHERE location LIKE %s and purpose = "인도"
+            LIMIT %s OFFSET %s
+            """
+            values = (f"%{search_query}%", per_page, offset)
+        else:  # all 또는 기본값
+            sql = """
+            SELECT * FROM street_lights 
+            WHERE (location LIKE %s OR street_light_id LIKE %s) and purpose = "인도"
+            LIMIT %s OFFSET %s
+            """
+            values = (f"%{search_query}%", f"%{search_query}%", per_page, offset)
+        
+        return sql, values
+
+    # 인도 CCTV 검색된 총 개수
+    def get_sidewalk_cctv_count_query(self, search_query, search_type):
+        if search_type == "street_light_id":
+            sql = """
+            SELECT COUNT(*) AS total FROM street_lights 
+            WHERE street_light_id LIKE %s and purpose = "인도"
+            """
+            values = (f"%{search_query}%",)
+        
+        elif search_type == "street_light_location":
+            sql = """
+            SELECT COUNT(*) AS total FROM street_lights 
+            WHERE location LIKE %s and purpose = "인도"
+            """
+            values = (f"%{search_query}%",)
+        
+        else:  # all 또는 기본값
+            sql = """
+            SELECT COUNT(*) AS total FROM street_lights 
+            WHERE (location LIKE %s OR street_light_id LIKE %s) and purpose = "인도"
+            """
+            values = (f"%{search_query}%", f"%{search_query}%")
+        
+        return sql, values
+
+
     ## 로그인 후 문의한 내용 저장
     def add_enquire_member(self, userid, username, email, reason, notes, filename):
         try:

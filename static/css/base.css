@@ -303,6 +303,7 @@ body {
     text-align:center;
 }
 
+
 /* .show 클래스를 추가하면 보이도록 */
 .flash-message.show {
     display: block;

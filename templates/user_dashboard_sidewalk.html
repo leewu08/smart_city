@@ -44,7 +44,7 @@
 {% block content %}
 <!-- 가로등 조회 폼 -->
 <div class="search-container">
-    <form method="get" action="{{ url_for('user_dashboard_india', userid=session['user_id']) }}">
+    <form method="get" action="{{ url_for('user_dashboard_sidewalk', userid=user.user_id) }}">
         <label for="search_type">검색 타입:</label>
         <select name="search_type" id="search_type">
             <option value="street_light_id" {% if search_type == 'street_light_id' %}selected{% endif %}>가로등 ID</option>
@@ -86,11 +86,11 @@
 <!-- 페이지네이션 -->
 <div class="pagination">
     {% if prev_page %}
-        <a href="{{ url_for('user_dashboard_india', search_query=search_query, search_type=search_type, page=prev_page) }}">이전</a>
+        <a href="{{ url_for('user_dashboard_sidewalk', userid=user.user_id, search_query=search_query, search_type=search_type, page=prev_page) }}">이전</a>
     {% endif %}
     <span>페이지 {{ page }} / {{ total_pages }}</span>
     {% if next_page %}
-        <a href="{{ url_for('user_dashboard_india', search_query=search_query, search_type=search_type, page=next_page) }}">다음</a>
+        <a href="{{ url_for('user_dashboard_sidewalk', userid=user.user_id, search_query=search_query, search_type=search_type, page=next_page) }}">다음</a>
     {% endif %}
 </div>
 {% endblock %}

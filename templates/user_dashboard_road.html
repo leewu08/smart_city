@@ -6,7 +6,7 @@
 {% block content %}
 <!-- 가로등 조회 폼 -->
 <div class="search-container">
-    <form method="get" action="{{ url_for('user_dashboard_road', userid=session['user_id']) }}">
+    <form method="get" action="{{ url_for('user_dashboard_road', userid=user.user_id) }}">
         <label for="search_type">검색 타입:</label>
         <select name="search_type" id="search_type">
             <option value="street_light_id" {% if search_type == 'street_light_id' %}selected{% endif %}>가로등 ID</option>
@@ -27,7 +27,7 @@
         <tr>
             <th>가로등 ID</th>
             <th>위치</th>
-            <th>상세 보기</th>
+            <th>실시간 CCTV</th>
         </tr>
     </thead>
     <tbody>
@@ -42,28 +42,17 @@
                 <td colspan="3">검색된 가로등 정보가 없습니다.</td>
             </tr>
         {% endfor %}
-        {% set num_rows = street_lights|length %}
-            {% if num_rows < 10 %}
-                {% for i in range(10 - num_rows) %}
-                    <tr class="empty-row">
-                        <td>&nbsp;</td>
-                        <td>&nbsp;</td>
-                        <td>&nbsp;</td>
-                    </tr>
-                {% endfor %}
-            {% endif %}
     </tbody>
 </table>
-
 
 <!-- 페이지네이션 -->
 <div class="pagination">
     {% if prev_page %}
-        <a href="{{ url_for('user_dashboard_road', search_query=search_query, search_type=search_type, page=prev_page) }}">이전</a>
+        <a href="{{ url_for('user_dashboard_road', userid=user.user_id, search_query=search_query, search_type=search_type, page=prev_page) }}">이전</a>
     {% endif %}
     <span>페이지 {{ page }} / {{ total_pages }}</span>
     {% if next_page %}
-        <a href="{{ url_for('user_dashboard_road', search_query=search_query, search_type=search_type, page=next_page) }}">다음</a>
+        <a href="{{ url_for('user_dashboard_road', userid=user.user_id, search_query=search_query, search_type=search_type, page=next_page) }}">다음</a>
     {% endif %}
 </div>
 {% endblock %}

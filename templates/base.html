@@ -19,7 +19,7 @@
             <span class="team-name">SAFELIGHT</span>
         </div>
         <div class="right-nav">
-            {{ session['user_name'] }} 님 환영합니다
+            {{ user.user_name }} 님 환영합니다
             <button id="dark-mode-toggle" class="btn btn-secondary">다크모드</button>
             <!-- 회원정보 수정 아이콘 버튼 -->
             <a href="{{ url_for('update_profile', userid=session['user_id']) }}" class="btn btn-primary">
@@ -64,8 +64,8 @@
     {% if 'user_id' in session %}
     <nav class="header-nav">
         <div class="nav-menu">
-            <a href="{{ url_for('user_dashboard', userid=session['user_id']) }}" class="nav-link">HOME</a>
-            <a href="{{ url_for('user_dashboard_about', userid=session['user_id']) }}" class="nav-link">소개</a>
+            <a href="{{ url_for('user_dashboard', userid=user.user_id) }}" class="nav-link">HOME</a>
+            <a href="{{ url_for('user_dashboard_about', userid=user.user_id) }}" class="nav-link">소개</a>
             <a href="#" class="nav-link">CCTV 보기</a>
             <a href="#" class="nav-link">문의</a>
         </div>
@@ -75,12 +75,12 @@
             <div class="dropdown-content">
             </div>
             <div class="dropdown-content">
-                <a href="{{ url_for('user_dashboard_road', userid=session['user_id']) }}">도로용 CCTV 보기</a>
-                <a href="{{ url_for('user_dashboard_india', userid=session['user_id]']) }}">인도용 CCTV 보기 </a>
+                <a href="{{ url_for('user_dashboard_road', userid=user.user_id) }}">도로용 CCTV 보기</a>
+                <a href="{{ url_for('user_dashboard_sidewalk', userid=user.user_id) }}">인도용 CCTV 보기 </a>
             </div>
             <div class="dropdown-content">
-                <a href="{{ url_for('index_login')}}">문의 보기</a>
-                <a href="{{ url_for('index_login')}}">문의 하기</a>
+                <a href="#">문의 보기</a>
+                <a href="#">문의 하기</a>
             </div>
         </div>
     </nav>
@@ -88,23 +88,22 @@
     <nav class="header-nav">
         <div class="nav-menu">
             <a href="{{ url_for('index') }}" class="nav-link">HOME</a>
-            <a href="#" class="nav-link">소개</a>
-            <a href="{{ url_for('index_login')}}" class="nav-link">CCTV 보기</a>
-            <a href="{{ url_for('index_login')}}" class="nav-link">문의</a>
+            <a href="{{ url_for('need_login')}}" class="nav-link">소개</a>
+            <a href="{{ url_for('need_login')}}" class="nav-link">CCTV 보기</a>
+            <a href="{{ url_for('need_login')}}" class="nav-link">문의</a>
         </div>
         <div class="dropdown-container">
             <div class="dropdown-content">
             </div>
             <div class="dropdown-content">
-                <a href="{{ url_for('index_about')}}">소개</a>
             </div>
             <div class="dropdown-content">
-                <a href="{{ url_for('index_login')}}">도로용 CCTV 보기</a>
-                <a href="{{ url_for('index_login')}}">인도용 CCTV 보기 </a>
+                <a href="{{ url_for('need_login')}}">도로용 CCTV 보기</a>
+                <a href="{{ url_for('need_login')}}">인도용 CCTV 보기 </a>
             </div>
             <div class="dropdown-content">
-                <a href="{{ url_for('index_login')}}">문의 보기</a>
-                <a href="{{ url_for('index_login')}}">문의 하기</a>
+                <a href="{{ url_for('need_login')}}">문의 보기</a>
+                <a href="{{ url_for('need_login')}}">문의 하기</a>
             </div>
         </div>
     </nav>

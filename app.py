@@ -58,7 +58,6 @@ def index():
 def index_about():
     return render_template('about.html')
 
-
 ### 회원가입 페이지등록 
 #회원가입
 @app.route('/register', methods=['GET','POST'])
@@ -146,17 +145,15 @@ def login():
                     manager.update_last_login(id) #로그인 성공 후 마지막 로그인 갱신
                     if user['status'] == 'user' : #일반회원일경우
                         if user['security_status'] == 1 : #보안이 위험일때 경고알림
-                            message = Markup('암호를 변경한지 90일 지났습니다.<br>암호를 변경하시길 권장합니다.')
-                            flash(message, 'error')
+                            message = Markup('암호를 변경한지 90일 지났습니다.<br>암호를 변경하시길 권장합니다.')#Markup과 <br>태그로 flash메세지 줄나눔
+                            flash(message, 'warning')
                         return redirect(url_for('user_dashboard', userid=session['user_id'])) # 회원 페이지로 이동
                     else :
-                        return render_template('delete_user.html', userid=session['user_id']) # 탈퇴한 계정
+                        return render_template('delete_user_dashboard.html', userid=session['user_id']) # 탈퇴한 계정
                 else:
                     flash('아이디 또는 비밀번호가 일치하지 않습니다.', 'error')  # 로그인 실패 시 메시지
                     return redirect(url_for('login'))  # 로그인 폼 다시 렌더링          
-            else:
-                flash("아이디와 비밀번호를 모두 입력해 주세요.", 'error') # 아이디나 비밀번호를 입력하지 않았을 경우
-                return redirect(url_for('login'))  # 로그인 폼 다시 렌더링
+                
         elif admin:
             if id and password: 
                 if admin['password'] == password: #아이디와 비밀번호가 일치하면
@@ -164,14 +161,18 @@ def login():
                     session['admin_name'] = admin['admin_name'] #세션에 관리자이름 저장
                     manager.update_admin_last_login(id) # 로그인 성공 후 관리자 마지막 로그인 갱신
                     return redirect(url_for('admin_dashboard')) #관리자 페이지로 이동
+                else: 
+                    flash('아이디 또는 비밀번호가 일치하지 않습니다.', 'error')  # 로그인 실패 시 메시지
+                    return redirect(url_for('login'))  # 로그인 폼 다시 렌더링 
+                
         else:  # 존재하지 않는 사용자
             flash("존재하지 않는 아이디입니다.", 'error')
             return redirect(url_for('login'))  # 로그인 폼 다시 렌더링
 
     return render_template('login.html')  # GET 요청 시 로그인 폼 보여주기
 
-@app.route('/index_login')
-def index_login():
+@app.route('/need_login')
+def need_login():
     flash('로그인이 필요합니다. 로그인해주세요', 'error')
     return redirect(url_for('login'))
 
@@ -181,7 +182,7 @@ def index_login():
 @login_required
 def user_dashboard():
     userid = session['user_id']
-    user = manager.get_user_by_id(userid)
+    user=manager.get_user_by_id(userid)
     return render_template('user_dashboard.html', user=user )
 
 ##회원 정보 수정 
@@ -197,7 +198,7 @@ def update_profile(userid):
         password = request.form['password'] if request.form['password'] else None
         confirm_password = request.form['confirm_password'] if request.form['confirm_password'] else None
         address = request.form['address'] if request.form['address'] else user.address
-
+        username = request.form['username'] if request.form['username'] else user.user_name
         # 비밀번호가 입력되었으면 확인
         if password:
             if password != confirm_password:
@@ -215,7 +216,7 @@ def update_profile(userid):
                 flash('비밀번호를 변경하였습니다', 'success')
                 manager.update_password(userid, password)
         # 나머지 정보 업데이트
-        manager.update_user_info(userid, email, address)
+        manager.update_user_info(userid, username, email, address)
 
         # 성공 메시지나 다른 페이지로 리디렉션
         flash('회원 정보가 성공적으로 수정되었습니다.', 'success')
@@ -225,13 +226,15 @@ def update_profile(userid):
 
 ##로그인 후 소개페이지
 @app.route('/user_dashboard/about/<userid>')
+@login_required
 def user_dashboard_about(userid):
-    user = manager.get_user_by_id(userid)
+    user=manager.get_user_by_id(userid)
     return render_template('about.html', user=user)
 
 
 ##로그인 후 도로CCTV 페이지
 @app.route('/user/dashboard/road/<userid>', methods=['GET'])
+@login_required
 def user_dashboard_road(userid):
     user = manager.get_user_by_id(userid)
     search_query = request.args.get("search_query", "")
@@ -268,12 +271,13 @@ def user_dashboard_road(userid):
         total_pages=total_pages,
         prev_page=prev_page,
         next_page=next_page,
-        user = user
+        user=user
     )
 
 ##로그인 후 인도CCTV 페이지
-@app.route('/user/dashboard/india/<userid>', methods=['GET'])
-def user_dashboard_india(userid):
+@app.route('/user/dashboard/sidewalk/<userid>', methods=['GET'])
+@login_required
+def user_dashboard_sidewalk(userid):
     user = manager.get_user_by_id(userid)
     search_query = request.args.get("search_query", "")
     search_type = request.args.get("search_type", "all")  # 기본값은 'all'
@@ -284,8 +288,8 @@ def user_dashboard_india(userid):
     db_manager = DBManager()
 
     # SQL 쿼리 및 파라미터 가져오기
-    sql, values = db_manager.get_india_cctv_query(search_query, search_type, per_page, offset)
-    count_sql, count_values = db_manager.get_india_cctv_count_query(search_query, search_type)
+    sql, values = db_manager.get_sidewalk_cctv_query(search_query, search_type, per_page, offset)
+    count_sql, count_values = db_manager.get_sidewalk_cctv_count_query(search_query, search_type)
 
     # 검색된 가로등 목록 가져오기
     street_lights = db_manager.execute_query(sql, values)
@@ -299,7 +303,7 @@ def user_dashboard_india(userid):
     next_page = page + 1 if page < total_pages else None
 
     return render_template(
-        "user_dashboard_india.html",
+        "user_dashboard_sidewalk.html",
         street_lights=street_lights,
         search_query=search_query,
         search_type=search_type,
@@ -315,10 +319,10 @@ def user_dashboard_india(userid):
 
 
 
-#탈퇴회원 페이지
-@app.route('/delete_user')
+#탈퇴회원 로그인 후 dashboard페이지
+@app.route('/delete_user_dashboard')
 def delete_user():
-    return render_template('delete_user.html')
+    return render_template('delete_user_dashboard.html')
 
 @app.route('/edit_password')
 def edit_password():
@@ -373,10 +377,7 @@ def self_delete_member(userid):
 
 ## 기능소개 페이지
 
-#홈페이지에서 기능소개
-@app.route('/feature')
-def index_feature():
-    return render_template("index_feature.html")
+
 
 #로그인시 기능소개
 @app.route('/login/feature')
