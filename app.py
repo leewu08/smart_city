@@ -316,6 +316,37 @@ def user_dashboard_sidewalk(userid):
         user = user
     )
 
+##회원페이지 문의하기
+##회원페이지에서 문의하기
+@app.route('/user_dashboard/inquiries/<userid>', methods=['GET','POST'])
+@login_required
+def user_dashboard_inquiries(userid):
+    if request.method == 'GET':
+        user = manager.get_user_by_id(userid)
+        return render_template("user_dashboard_inquiries.html", user=user)
+    
+    if request.method == 'POST':
+        user = manager.get_user_by_id(userid)
+        userid = user['user_id']
+        file = request.files['file']
+        filename = file.filename if file else None
+        # 파일이 있으면 저장
+        if filename:
+            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+        inquiry_reason = request.form['inquiry_type']
+        detail_reason = request.form.get('message')
+        manager.add_inquire_user(userid, filename, inquiry_reason, detail_reason)
+        flash("문의하기가 관리자에게 전달되었습니다.", 'success')
+        return redirect(url_for('user_dashboard', user=user))
+    
+##문의된 정보 보기
+@app.route('/user_dashboard/inquires_list/<userid>', methods=['GET', 'POST'])
+@admin_required
+def admin_management_posts():
+    return render_template("admin_management_posts.html")    
+
+
+
 
 
 
@@ -388,59 +419,11 @@ def login_feature():
     return render_template("login_feature.html", member = member)
 
 
-### 문의하기 페이지
-##일반회원 문의하기 
-@app.route('/user_dashboard/inquire/userid', methods=['GET','POST'])
-def user_dashboard_inquire(userid):
-    user= manager.get_user_by_id(userid)
-    if request.method == 'POST':
-        email = request.form['email']
-        file = request.files['file']
-        filename = file.filename if file else None
-        # 파일이 있으면 저장
-        if filename:
-            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-        #회원 이메일과 중복여부
-        if manager.duplicate_email(email):
-            role = manager.duplicate_email(email)['role']
-            if role == "non_member":
-                reason = request.form['reason']
-                notes = request.form.get('notes')
-                manager.add_enquire_index(email, reason, notes, filename)
-                flash("문의하기가 관리자에게 전달되었습니다.", 'success')
-                return redirect(url_for('index'))
-            else : 
-                flash('이미 회원 가입된 이메일 입니다. 로그인해주세요', 'error')
-                return redirect(url_for('index_enquire'))
-        reason = request.form['reason']
-        notes = request.form.get('notes')
-        manager.add_enquire_index(email, reason, notes, filename)
-        flash("문의하기가 관리자에게 전달되었습니다.", 'success')
-        return redirect(url_for('index'))
-    return render_template('user_dashboard_inquire.heml', user=user)
 
-##회원페이지에서 문의하기
-@app.route('/login_enquire/<userid>', methods=['GET','POST'])
-@login_required
-def login_enquire(userid):
-    if request.method == 'GET':
-        member = manager.get_member_by_id(userid)
-        return render_template("login_enquire.html", member=member)
-    
-    if request.method == 'POST':
-        member = manager.get_member_by_id(userid)
-        username = member['username']
-        email = member['email']
-        file = request.files['file']
-        filename = file.filename if file else None
-        # 파일이 있으면 저장
-        if filename:
-            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-        reason = request.form['reason']
-        notes = request.form.get('notes')
-        manager.add_enquire_member(userid, username, email, reason, notes, filename)
-        flash("문의하기가 관리자에게 전달되었습니다.", 'success')
-        return redirect(url_for('dashboard'))
+
+
+
+
 
 ##관리자 페이지에서 문의정보 보기
 ##문의된 정보 보기

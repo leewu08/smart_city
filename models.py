@@ -332,15 +332,15 @@ class DBManager:
 
 
     ## 로그인 후 문의한 내용 저장
-    def add_enquire_member(self, userid, username, email, reason, notes, filename):
+    def add_inquire_user(self, userid, filename, inquiry_reason, detail_reason):
         try:
             self.connect()
             # equires에 CURDATE()를 명시적으로 설정
             sql = """
-            INSERT INTO enquiries (userid, username, email, reason, notes, enquired_at, filename)
-            VALUES (%s, %s, %s, %s, %s, NOW(), %s)
+            INSERT INTO inquiries (user_id, capture_file, inquiry_reason, detail_reason)
+            VALUES (%s, %s, %s, %s)
             """
-            values = (userid,username,email,reason,notes, filename)
+            values = (userid, filename, inquiry_reason, detail_reason)
             self.cursor.execute(sql, values)
             self.connection.commit()
             print("문의 정보를 저장했습니다")
