@@ -19,10 +19,10 @@
             <span class="team-name">SAFELIGHT</span>
         </div>
         <div class="right-nav">
-            {{ user.user_name }} 님 환영합니다
+            {{ session['user_name'] }} 님 환영합니다
             <button id="dark-mode-toggle" class="btn btn-secondary">다크모드</button>
             <!-- 회원정보 수정 아이콘 버튼 -->
-            <a href="{{ url_for('update_profile', userid=session['user_id']) }}" class="btn btn-primary">
+            <a href="{{ url_for('update_profile', userid=user.user_id) }}" class="btn btn-primary">
                 <i class="fas fa-user-edit"></i> 회원정보 수정
             </a>
             <!-- 로그아웃 버튼 -->
@@ -80,7 +80,7 @@
             </div>
             <div class="dropdown-content">
                 <a href="#">문의 보기</a>
-                <a href="#">문의 하기</a>
+                <a href="{{ url_for('user_dashboard_road', userid=user.user_id) }}">문의 하기</a>
             </div>
         </div>
     </nav>
@@ -96,6 +96,7 @@
             <div class="dropdown-content">
             </div>
             <div class="dropdown-content">
+                <a href="{{ url_for('need_login')}}">소개</a>
             </div>
             <div class="dropdown-content">
                 <a href="{{ url_for('need_login')}}">도로용 CCTV 보기</a>

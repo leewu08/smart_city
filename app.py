@@ -389,12 +389,10 @@ def login_feature():
 
 
 ### 문의하기 페이지
-##홈페이지에서 문의하기 
-@app.route('/index_enquire', methods=['GET','POST'])
-def index_enquire():
-    if request.method == 'GET':
-        return render_template("index_enquire.html")
-    
+##일반회원 문의하기 
+@app.route('/user_dashboard/inquire/userid', methods=['GET','POST'])
+def user_dashboard_inquire(userid):
+    user= manager.get_user_by_id(userid)
     if request.method == 'POST':
         email = request.form['email']
         file = request.files['file']
@@ -419,7 +417,7 @@ def index_enquire():
         manager.add_enquire_index(email, reason, notes, filename)
         flash("문의하기가 관리자에게 전달되었습니다.", 'success')
         return redirect(url_for('index'))
-
+    return render_template('user_dashboard_inquire.heml', user=user)
 
 ##회원페이지에서 문의하기
 @app.route('/login_enquire/<userid>', methods=['GET','POST'])
