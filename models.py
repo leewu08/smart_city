@@ -14,7 +14,7 @@ class DBManager:
     def connect(self): 
         try :
             self.connection = mysql.connector.connect(
-                host = "10.0.66.13",
+                host = "10.0.66.4",
                 user = "suyong",
                 password="1234",
                 database="smart_city",
@@ -32,101 +32,16 @@ class DBManager:
             self.connection.close()
     
     
-    
-    # 선택한 회원 정보 가져오기
-    def get_member_by_id(self, userid):
-        try:
-            self.connect()
-            sql = "SELECT * FROM members WHERE userid = %s"
-            value = (userid,)
-            self.cursor.execute(sql,value)
-            return self.cursor.fetchone()
-        except mysql.connector.Error as error :
-            print(f"회원정보 가져오기 연결 실패: {error}")
-            return None 
-        finally:
-            self.disconnect()
-    
-
-    ## 회원가입 유효성검사
-    # 중복아이디 확인
-    def duplicate_member(self, userid):
-        try:
-            self.connect()
-            sql = 'SELECT * FROM members WHERE userid = %s'
-            self.cursor.execute(sql, (userid,))
-            result = self.cursor.fetchone()
-            if result : 
-                return True
-            else :
-                return False
-        except mysql.connector.Error as error:
-            self.connection.rollback()
-            print(f"회원가입 실패: {error}")
-            return False
-        finally:
-            self.disconnect()
-    
-    # 삭제된 아이디와 중복여부 확인
-    def duplicate_removed_member(self, userid):
-        try:
-            self.connect()
-            sql = 'SELECT * FROM members WHERE userid = %s'
-            self.cursor.execute(sql, (userid,))
-            result = self.cursor.fetchone()
-            if result : 
-                return True
-            else :
-                return False
-        except mysql.connector.Error as error:
-            self.connection.rollback()
-            print(f"회원가입 실패: {error}")
-            return False
-        finally:
-            self.disconnect()
-
-    # 이메일 중복 확인
-    def duplicate_email(self, email):
-        try:
-            self.connect()
-            sql = 'SELECT * FROM members WHERE email = %s'
-            self.cursor.execute(sql, (email,))
-            return self.cursor.fetchone()    
-        except mysql.connector.Error as error:
-            self.connection.rollback()
-            print(f"회원가입 실패: {error}")
-            return False
-        finally:
-            self.disconnect()
-    
-    #삭제된 회원중에서 이메일 중복 확인
-    def duplicate_removed_email(self, email):
-        try:
-            self.connect()
-            sql = 'SELECT * FROM removed_members WHERE email = %s'
-            self.cursor.execute(sql, (email,))
-            result = self.cursor.fetchone()
-            if result : 
-                return True
-            else :
-                return False
-        except mysql.connector.Error as error:
-            self.connection.rollback()
-            print(f"회원가입 실패: {error}")
-            return False
-        finally:
-            self.disconnect()
-
-    ## 회원가입 정보 처리
+    ### 회원가입 정보 처리
     #테이블에 가입한 회원 데이터 삽입
-    def register_pending_member(self, userid, username, password, birthday, email, gender):
+    def register_users(self, user_id, user_name, password, email, address, birthday, reg_number, gender):
         try:
             self.connect()
             sql = """
-                  INSERT INTO members (userid, username, password, birthday, email, status, gender)
-                  VALUES (%s, %s, %s, %s, %s, 'pending', %s)
+                  INSERT INTO users (user_id, user_name, password,  email, address, birthday, reg_number, gender)
+                  VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
                   """
-            values = (userid, username, password, email, birthday, gender)
+            values = (user_id, user_name, password, email, address, birthday, reg_number, gender)
             self.cursor.execute(sql, values)
             self.connection.commit()
             return True
@@ -135,6 +50,140 @@ class DBManager:
             return False
         finally:
             self.disconnect()
+
+    ## 회원 or 관리자 로그인
+    # 선택한 회원 정보 가져오기
+    def get_user_by_id(self, id):
+        try:
+            self.connect()
+            sql = "SELECT * FROM users WHERE user_id = %s"
+            value = (id,)
+            self.cursor.execute(sql,value)
+            return self.cursor.fetchone()
+        except mysql.connector.Error as error :
+            print(f"회원 정보 가져오기 연결 실패: {error}")
+            return None 
+        finally:
+            self.disconnect()
+    
+    # 선택한 관리자 정보 가져오기
+    def get_admin_by_id(self, id):
+        try:
+            self.connect()
+            sql = "SELECT * FROM admins WHERE admin_id = %s"
+            value = (id,)
+            self.cursor.execute(sql,value)
+            return self.cursor.fetchone()
+        except mysql.connector.Error as error :
+            print(f"관리자 정보 가져오기 연결 실패: {error}")
+            return None 
+        finally:
+            self.disconnect()
+
+    # 회원 마지막 로그인 시간 업데이트
+    def update_last_login(self, id):
+        try:
+            self.connect()
+            sql = "UPDATE users SET last_login = CURRENT_TIMESTAMP WHERE user_id = %s"
+            value = (id,)
+            self.cursor.execute(sql, value)
+            self.connection.commit()
+        except Exception as error:
+            print(f"로그인 시간 갱신 실패: {error}")
+            raise
+        finally:
+            self.disconnect()
+
+    # 선택한 관리자 마지막로그인 업데이트
+    def update_admin_last_login(self, id):
+        try:
+            self.connect()
+            sql = "UPDATE admins SET last_login = CURRENT_TIMESTAMP WHERE admin_id = %s"
+            value = (id,)
+            self.cursor.execute(sql, value)
+            self.connection.commit()
+        except Exception as error:
+            print(f"로그인 시간 갱신 실패: {error}")
+            raise
+        finally:
+            self.disconnect()
+    
+    # 회원 비밀번호 변경
+    def update_password(self, id, password):
+        try:
+            self.connect()  # DB 연결
+            sql= """
+                UPDATE users
+                SET password = %s, password_last_updated = CURRENT_TIMESTAMP
+                WHERE user_id = %s
+                """
+            values = (password, id)
+            self.cursor.execute(sql, values)
+            self.connection.commit()  # 모든 데이터 가져오기
+            print("회원 비밀번호가 수정되었습니다.")
+            return True
+        except Exception as error:
+            print(f"회원 비밀번호 수정을 실패했습니다 : {error}")
+            return False
+        finally:
+            self.disconnect() 
+
+    # 회원 정보 변경
+    def update_user_info(self, userid, email, address):
+        try:
+            self.connect()  # DB 연결
+            sql= """
+            UPDATE users
+            SET email = %s,
+            address = %s
+            WHERE user_id = %s
+            """
+            values = (email, address, userid)
+            self.cursor.execute(sql, values)
+            self.connection.commit()  # 모든 데이터 가져오기
+            print("회원정보가 수정되었습니다.")
+            return True
+        except Exception as error:
+            print(f"회원정보 수정을 실패했습니다 : {error}")
+            return False
+        finally:
+            self.disconnect() 
+
+    ## 회원가입 유효성검사
+    # 중복아이디 확인
+    def duplicate_users(self, user_id):
+        try:
+            self.connect()
+            sql = 'SELECT * FROM users WHERE user_id = %s'
+            self.cursor.execute(sql, (user_id,))
+            result = self.cursor.fetchone()
+            if result : 
+                return True
+            else :
+                return False
+        except mysql.connector.Error as error:
+            self.connection.rollback()
+            print(f"회원가입 실패: {error}")
+            return False
+        finally:
+            self.disconnect()
+    
+    
+    # 이메일 중복 확인
+    def duplicate_email(self, email):
+        try:
+            self.connect()
+            sql = 'SELECT * FROM users WHERE email = %s'
+            self.cursor.execute(sql, (email,))
+            return self.cursor.fetchone()    
+        except mysql.connector.Error as error:
+            self.connection.rollback()
+            print(f"회원가입 실패: {error}")
+            return False
+        finally:
+            self.disconnect()
+
+   
     
     #전체 가입자 수 카운트 
     def all_member_count(self):
@@ -151,55 +200,82 @@ class DBManager:
         finally:
             self.disconnect()
     
-   
-    
-    #일반회원들 가져오기
-    def get_all_members(self):
-        try:
+    # 도로 CCTV 검색 및 페이지네이션
+    def get_road_cctv_query(self, search_query, search_type, per_page, offset):
+        if search_type == "street_light_id":
+            sql = """
+            SELECT * FROM street_lights 
+            WHERE street_light_id LIKE %s 
+            LIMIT %s OFFSET %s
+            """
+            values = (f"%{search_query}%", per_page, offset)
+
+        elif search_type == "street_light_location":
+            sql = """
+            SELECT * FROM street_lights 
+            WHERE location LIKE %s 
+            LIMIT %s OFFSET %s
+            """
+            values = (f"%{search_query}%", per_page, offset)
+        else:  # all 또는 기본값
+            sql = """
+            SELECT * FROM street_lights 
+            WHERE location LIKE %s OR street_light_id LIKE %s 
+            LIMIT %s OFFSET %s
+            """
+            values = (f"%{search_query}%", f"%{search_query}%", per_page, offset)
+        
+        return sql, values
+
+    # 도로 CCTV 검색된 총 개수
+    def get_road_cctv_count_query(self, search_query, search_type):
+        if search_type == "street_light_id":
+            sql = """
+            SELECT COUNT(*) AS total FROM street_lights 
+            WHERE street_light_id LIKE %s
+            """
+            values = (f"%{search_query}%",)
+        
+        elif search_type == "street_light_location":
+            sql = """
+            SELECT COUNT(*) AS total FROM street_lights 
+            WHERE location LIKE %s
+            """
+            values = (f"%{search_query}%",)
+        
+        else:  # all 또는 기본값
+            sql = """
+            SELECT COUNT(*) AS total FROM street_lights 
+            WHERE location LIKE %s OR street_light_id LIKE %s
+            """
+            values = (f"%{search_query}%", f"%{search_query}%")
+        
+        return sql, values
+
+    # 3. 쿼리를 실행하고 결과를 반환
+    def execute_query(self, sql, values):
+        try :
             self.connect()
-            sql = "SELECT * FROM members WHERE role != 'admin'"
-            self.cursor.execute(sql)
+            self.cursor.execute(sql,values)
             return self.cursor.fetchall()
         except Exception as error:
-            print(f"가입승인 회원들 정보 가져오기 실패 : {error}")
+            print(f"특정 가로등 정보 가져오기 실패 : {error}")
             return False
         finally:
             self.disconnect()
-
+        
     
-
-    # 회원 마지막 로그인 시간 업데이트
-    def update_last_login(self, userid):
-        try:
+    # 4. 카운트를 실행하고 결과를 반환
+    def execute_count_query(self, count_sql, count_values):
+        try :
             self.connect()
-            sql = "UPDATE members SET last_login = CURDATE() WHERE userid = %s"
-            value = (userid,)
-            self.cursor.execute(sql, value)
-            self.connection.commit()
+            self.cursor.execute(count_sql,count_values)
+            return self.cursor.fetchone()["total"]
         except Exception as error:
-            print(f"로그인 시간 갱신 실패: {error}")
-            raise
+            print(f"특정 가로등 개수 가져오기 실패 : {error}")
+            return False
         finally:
             self.disconnect()
-
-  
-
-    # 데이터베이스(members)에서 회원지우기
-    def delete_member(self, userid):
-        try:
-            self.connect()
-            sql = "DELETE FROM members WHERE userid = %s"
-            value = (userid, )
-            self.cursor.execute(sql,value)
-            self.connection.commit()
-            print(f'{userid}님의 회원 삭제가 완료되었습니다.')
-            return True
-        except Exception as error:
-            print(f"회원 탈퇴 실패 : {error}")
-            return False
-        finally : 
-            self.disconnect()
-
   
     ## 로그인 후 문의한 내용 저장
     def add_enquire_member(self, userid, username, email, reason, notes, filename):
@@ -270,87 +346,10 @@ class DBManager:
             self.disconnect()
     
 
-    #서비스 사용을 위한 검색 내역 데이터 테이블 만들기
-    #검색한 내용을 저장할 데이터 삽입
-
     
-    #서비스 사용을 위한 검색 내역 데이터값 저장
     
-    def save_service_usage(self, userid, username, health_status_str, functionality_choices_str):
-        try:
-            self.connect()  # DB 연결
-            sql = """
-            INSERT INTO service_usage (userid, username, used_service_health_status,used_service_functionality, used_service_at)
-            VALUES (%s, %s, %s, %s, now())
-            """
-            values = (userid, username, health_status_str, functionality_choices_str)
-
-            # SQL 실행
-            self.cursor.execute(sql, values)
-            self.connection.commit()
-            print("서비스 사용 정보가 성공적으로 저장되었습니다.")
-        except Exception as error:
-            print(f"서비스 사용 정보 저장 중 오류 발생: {error}")
-        finally:
-            self.disconnect()  # DB 연결 종료
-
-    #서비스 최근 사용내역 정보 가져오기
-    def get_service_usage_by_userid(self, userid):
-        try:
-            self.connect()  # DB 연결
-            sql = """
-            SELECT * FROM service_usage 
-            WHERE userid = %s 
-            ORDER BY used_service_at DESC
-            """
-            value = (userid,)
-            self.cursor.execute(sql, value)
-            return self.cursor.fetchall()  # 모든 데이터 가져오기
-        except Exception as error:
-            print(f"서비스 이용 내역 조회 중 오류 발생: {error}")
-            return []
-        finally:
-            self.disconnect() 
     
-    # 회원 정보 변경
-    def update_member_info(self, userid, username, email, birthday):
-        try:
-            self.connect()  # DB 연결
-            sql= """
-            UPDATE members
-            SET username = %s, email = %s, birthday = %s
-            WHERE userid = %s
-            """
-            values = (username, email, birthday, userid)
-            self.cursor.execute(sql, values)
-            self.connection.commit()  # 모든 데이터 가져오기
-            print("회원정보가 수정되었습니다.")
-            return True
-        except Exception as error:
-            print(f"회원정보 수정을 실패했습니다 : {error}")
-            return False
-        finally:
-            self.disconnect() 
     
-    # 회원 비밀번호 변경
-    def update_password(self, userid, password):
-        try:
-            self.connect()  # DB 연결
-            sql= """
-                UPDATE members
-                SET password = %s
-                WHERE userid = %s
-                """
-            values = (password, userid)
-            self.cursor.execute(sql, values)
-            self.connection.commit()  # 모든 데이터 가져오기
-            print("회원 비밀번호가 수정되었습니다.")
-            return True
-        except Exception as error:
-            print(f"회원 비밀번호 수정을 실패했습니다 : {error}")
-            return False
-        finally:
-            self.disconnect() 
 
 
     #모든 데이터의 페이지 네이션

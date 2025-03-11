@@ -4,7 +4,9 @@ import requests
 from datetime import datetime, timedelta
 from functools import wraps
 from models import DBManager
+from markupsafe import Markup
 import json
+import re
 
 app = Flask(__name__)
 
@@ -13,6 +15,21 @@ app = Flask(__name__)
 app.secret_key = 'your-secret-key'  # 비밀 키 설정, 실제 애플리케이션에서는 더 안전한 방법으로 설정해야 함if __name__ == '__main__':
 
 manager = DBManager()
+
+# led센서 테스트
+# @app.route('/test')
+# def test():
+#     return render_template('ledtest.html')
+
+# led센서 테스트2
+# @app.route('/led_control', methods=['GET'])
+# def control_led():
+#     command = request.args.get('command')
+#     if command:
+#         # 여기에서 MIT 인벤터에 명령을 전달하는 코드 필요
+#         print(f"Received command: {command}")
+#         return "Command Received"
+#     return "No Command", 400
 
 
 # 파일 업로드 경로 설정
@@ -31,41 +48,67 @@ def inject_full_date():
     full_date = f"{today} ({weekday})"
     return {"full_date": full_date}
 
-
-#members 데이터테이블 생성
-
-
-#members에 관리자계정 생성
-
-
-
-#removed_members 데이터테이블 생성
-
-
-#enquiries 데이터테이블 생성
-
-
-#기능성식품 데이터테이블 생성
-
-
-#서비스 사용내역 데이터테이블 생성
-
-
-# 받은 데이터 저장
-#manager.store_raw_material_data(api_url)
-
 ### 홈페이지
 @app.route('/')
 def index():
     return render_template('index.html')
+
+# 홈페이지에서 소개 페이지
+@app.route('/index_about')
+def index_about():
+    return render_template('about.html')
+
+
+### 회원가입 페이지등록 
+#회원가입
+@app.route('/register', methods=['GET','POST'])
+def register():
+    if request.method == 'POST':
+        user_name = request.form['username']
+        user_id = request.form['userid']
+        password = request.form['password']
+        address= request.form['address']
+        gender = request.form['gender']
+        email = request.form['email']
+        birthday = request.form['birthday']
+        reg_number = request.form['total_regnumber']
+        
+        #회원과 아이디가 중복되는지 확인
+        if manager.duplicate_users(user_id):
+            flash('이미 존재하는 아이디 입니다.', 'error')
+            return render_template('register.html')
+        
+        #회원 이메일과 중복여부
+        if manager.duplicate_email(email):
+            flash('이미 등록된 이메일 입니다.', 'error')
+            return render_template('register.html')
+        
+        if manager.register_users(user_id, user_name, password, email, address, birthday, reg_number, gender):
+            flash('회원가입 신청이 완료되었습니다.', 'success')
+            return redirect(url_for('index'))
+        
+        flash('회원가입에 실패했습니다.', 'error')
+        return redirect(url_for('register'))
+    return render_template('register.html')
+
+# 이용약관 페이지
+@app.route('/terms_of_service')
+def terms_of_service():
+    return render_template('terms_of_service.html')
+
+# 개인정보 처리방침
+@app.route('/privacy_policy')
+def privacy_policy():
+    return render_template('privacy_policy.html')
+
 
 ### 로그인 기능
 ## 로그인 필수 데코레이터
 def login_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
-        if 'user' not in session:
-            return redirect('/login')  # 로그인되지 않았다면 로그인 페이지로 리디렉션
+        if 'user_id' not in session:  # 'userid'가 세션에 없다면
+            return redirect('/login')  # 로그인 페이지로 리디렉션
         return f(*args, **kwargs)
     return decorated_function
 
@@ -73,112 +116,213 @@ def login_required(f):
 def admin_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
-        if 'user' not in session or session['role'] != 'admin':
+        if 'admin_id' not in session:  # 'adminid'가 세션에 없다면
+            return redirect('/login')  # 로그인 페이지로 리디렉션
+        
+        # 관리자 정보 확인
+        admin = manager.get_admin_by_id(session['admin_id'])  # 세션의 관리자 ID로 확인
+        if not admin:  # 관리자가 아니면
             return "접근 권한이 없습니다", 403  # 관리자만 접근 가능
+        
         return f(*args, **kwargs)
     return decorated_function
 
-
-### 회원가입 페이지등록 
-@app.route('/register', methods=['GET','POST'])
-def register():
-    if request.method == 'POST':
-        userid = request.form['userid']
-        password = request.form['password']
-        birthday = request.form['birthday']
-        username = request.form['username']
-        confirm_password = request.form['confirm_password']
-        email = request.form['email']
-        gender = request.form['gender']
-        #암호가 일치하는지 확인
-        if password != confirm_password:
-            flash('암호가 일치하지 않습니다', 'error')
-            return render_template('signup.html')
-        #회원과 아이디가 중복되는지 확인
-        if manager.duplicate_member(userid):
-            flash('이미 존재하는 아이디 입니다.', 'error')
-            return render_template('signup.html')
-        #탈퇴 아이디와 중복확인
-        if manager.duplicate_removed_member(userid):
-            flash('이미 존재하는 아이디 입니다.','error')
-            return render_template('signup.html')
-        #회원가입 이메일 입력여부
-        if not email:
-            flash("이메일을 입력해주세요.", "danger")
-            return render_template('signup.html')
-        #회원 이메일과 중복여부
-        if manager.duplicate_email(email):
-            flash('이미 등록된 이메일 입니다.', 'error')
-            return render_template('signup.html')
-        #탈퇴 이메일과 중복여부 
-        if manager.duplicate_removed_email(email):
-            flash('이미 등록된 이메일 입니다.', 'error')
-            return render_template('signup.html')
-        # 생년월일이 올바른 날짜 형식인지 확인
-
-        try:
-            # 'YYYY-MM-DD' 형식으로 변환
-            birthday = datetime.strptime(birthday, "%Y-%m-%d")
-        except ValueError:
-            flash('잘못된 날짜 형식입니다. 생년월일을 다시 확인해주세요.', 'error')
-            return render_template('signup.html')
-
-        # 나이 계산 (현재 날짜와 비교)
-        today = datetime.today()
-        age = today.year - birthday.year - ((today.month, today.day) < (birthday.month, birthday.day))
-
-        # 만 18세 이하인 경우 가입 불가
-        if age < 18:
-            flash('만 18세 이상만 회원가입이 가능합니다.', 'error')
-            return render_template('signup.html')
-
-        if manager.register_pending_member(userid, username, password, email, birthday, gender):
-            flash('회원가입 신청이 완료되었습니다. 관리자의 승인을 기다려 주세요.', 'success')
-            return redirect(url_for('index'))
-        flash('회원가입에 실패했습니다.', 'error')
-        return redirect(url_for('register'))
-    return render_template('signup.html')
-
-
-## 로그인 정보 가져오기
+### 로그인 정보 가져오기
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
-        userid = request.form['userid']
+        id = request.form['userid']
         password = request.form['password']
         
         # 사용자 정보 확인
-        user = manager.get_member_by_id(userid)  # DB에서 사용자 정보를 가져옴
+        user = manager.get_user_by_id(id)  # DB에서 사용자 정보를 가져옴
+        admin = manager.get_admin_by_id(id) # DB에서 관리자 정보를 가져옴 
 
         if user:  # user가 None이 아닐 경우에만 진행
-            if userid and password:
-                if user['status'] == 'approved':  # 승인된 사용자만 로그인 가능
-                    if user['password'] == password:  # 아이디와 비밀번호가 일치하면
-                        session['user'] = userid  # 세션에 사용자 아이디 저장
-                        session['role'] = user['role']  # 세션에 역할(role) 저장
-                        session['username'] = user['username']  # 세션에 이름(username) 저장
-                        if session['role'] == 'admin':
-                            manager.update_last_login(userid) #로그인 성공 후 마지막 로그인 갱신
-                            return redirect(url_for('admin_dashboard'))  # 관리자는 관리자 대시보드로
-                        elif session['role'] == 'dormant_member':
-                            return redirect(url_for('dormant_member_dashboard'))
-                        else:
-                            manager.update_last_login(userid) #로그인 성공 후 마지막 로그인 갱신
-                            return redirect(url_for('dashboard'))  # 일반 사용자는 대시보드로
-                    else:
-                        flash('아이디 또는 비밀번호가 일치하지 않습니다.', 'error')  # 로그인 실패 시 메시지
-                        return redirect(url_for('login'))  # 로그인 폼 다시 렌더링
-                else:  # 승인되지 않은 사용자
-                    flash('관리자의 가입승인이 필요합니다.', 'warning')  # 가입 승인 대기 중 메시지
-                    return redirect(url_for('login'))  # 로그인 폼 다시 렌더링
+            if id and password:
+                if user['password'] == password:  # 아이디와 비밀번호가 일치하면
+                    session['user_id'] = id  # 세션에 사용자 아이디 저장
+                    session['user_name'] = user['user_name']  # 세션에 이름(username) 저장
+                    manager.update_last_login(id) #로그인 성공 후 마지막 로그인 갱신
+                    if user['status'] == 'user' : #일반회원일경우
+                        if user['security_status'] == 1 : #보안이 위험일때 경고알림
+                            message = Markup('암호를 변경한지 90일 지났습니다.<br>암호를 변경하시길 권장합니다.')
+                            flash(message, 'error')
+                        return redirect(url_for('user_dashboard', userid=session['user_id'])) # 회원 페이지로 이동
+                    else :
+                        return render_template('delete_user.html', userid=session['user_id']) # 탈퇴한 계정
+                else:
+                    flash('아이디 또는 비밀번호가 일치하지 않습니다.', 'error')  # 로그인 실패 시 메시지
+                    return redirect(url_for('login'))  # 로그인 폼 다시 렌더링          
             else:
-                flash("아이디와 비밀번호를 모두 입력해 주세요.", 'error')
+                flash("아이디와 비밀번호를 모두 입력해 주세요.", 'error') # 아이디나 비밀번호를 입력하지 않았을 경우
                 return redirect(url_for('login'))  # 로그인 폼 다시 렌더링
+        elif admin:
+            if id and password: 
+                if admin['password'] == password: #아이디와 비밀번호가 일치하면
+                    session['admin_id'] = id #세션에 관리자 아이디 저장
+                    session['admin_name'] = admin['admin_name'] #세션에 관리자이름 저장
+                    manager.update_admin_last_login(id) # 로그인 성공 후 관리자 마지막 로그인 갱신
+                    return redirect(url_for('admin_dashboard')) #관리자 페이지로 이동
         else:  # 존재하지 않는 사용자
             flash("존재하지 않는 아이디입니다.", 'error')
             return redirect(url_for('login'))  # 로그인 폼 다시 렌더링
 
     return render_template('login.html')  # GET 요청 시 로그인 폼 보여주기
+
+@app.route('/index_login')
+def index_login():
+    flash('로그인이 필요합니다. 로그인해주세요', 'error')
+    return redirect(url_for('login'))
+
+### 회원 페이지
+##로그인 후 회원페이지
+@app.route('/user_dashboard')
+@login_required
+def user_dashboard():
+    userid = session['user_id']
+    user = manager.get_user_by_id(userid)
+    return render_template('user_dashboard.html', user=user )
+
+##회원 정보 수정 
+@app.route('/user_dashboard/update_profile/<userid>', methods=['GET', 'POST'])
+@login_required
+def update_profile(userid):
+    user = manager.get_user_by_id(userid)  # 회원 정보 가져오기
+
+    if request.method == 'POST':
+        print(userid)
+        # 폼에서 입력한 값 받아오기
+        email = request.form['email'] if request.form['email'] else user.email
+        password = request.form['password'] if request.form['password'] else None
+        confirm_password = request.form['confirm_password'] if request.form['confirm_password'] else None
+        address = request.form['address'] if request.form['address'] else user.address
+
+        # 비밀번호가 입력되었으면 확인
+        if password:
+            if password != confirm_password:
+                flash('비밀번호와 비밀번호 확인이 일치하지 않습니다.', 'error')
+                return redirect(request.url)  # 현재 페이지로 리디렉션
+
+            # 비밀번호 강도 체크 추가 (필요시)
+            # 예시: 비밀번호 길이, 숫자 포함 여부 등
+           
+            if password == user['password'] : 
+                flash('현재 비밀번호와 일치합니다.', 'warning')
+                return redirect(request.url) #현재 페이지로 리디렉션
+            # 비밀번호 업데이트
+            else:
+                flash('비밀번호를 변경하였습니다', 'success')
+                manager.update_password(userid, password)
+        # 나머지 정보 업데이트
+        manager.update_user_info(userid, email, address)
+
+        # 성공 메시지나 다른 페이지로 리디렉션
+        flash('회원 정보가 성공적으로 수정되었습니다.', 'success')
+        return redirect(url_for('user_dashboard'))  # 수정된 회원 정보를 대시보드에서 확인
+
+    return render_template('update_profile.html', user=user)
+
+##로그인 후 소개페이지
+@app.route('/user_dashboard/about/<userid>')
+def user_dashboard_about(userid):
+    user = manager.get_user_by_id(userid)
+    return render_template('about.html', user=user)
+
+
+##로그인 후 도로CCTV 페이지
+@app.route('/user/dashboard/road/<userid>', methods=['GET'])
+def user_dashboard_road(userid):
+    user = manager.get_user_by_id(userid)
+    search_query = request.args.get("search_query", "")
+    search_type = request.args.get("search_type", "all")  # 기본값은 'all'
+    page = request.args.get("page", 1, type=int)
+    per_page = 10
+    offset = (page - 1) * per_page
+
+    db_manager = DBManager()
+
+    # SQL 쿼리 및 파라미터 가져오기
+    sql, values = db_manager.get_road_cctv_query(search_query, search_type, per_page, offset)
+    count_sql, count_values = db_manager.get_road_cctv_count_query(search_query, search_type)
+
+    # 검색된 가로등 목록 가져오기
+    street_lights = db_manager.execute_query(sql, values)
+
+    # 전체 CCTV 개수 카운트
+    total_posts = db_manager.execute_count_query(count_sql, count_values)
+
+    # 페이지네이션 계산
+    total_pages = (total_posts + per_page - 1) // per_page
+    prev_page = page - 1 if page > 1 else None
+    next_page = page + 1 if page < total_pages else None
+
+    return render_template(
+        "user_dashboard_road.html",
+        street_lights=street_lights,
+        search_query=search_query,
+        search_type=search_type,
+        page=page,
+        total_posts=total_posts,
+        per_page=per_page,
+        total_pages=total_pages,
+        prev_page=prev_page,
+        next_page=next_page,
+        user = user
+    )
+
+##로그인 후 인도CCTV 페이지
+@app.route('/user/dashboard/india/<userid>', methods=['GET'])
+def user_dashboard_india(userid):
+    user = manager.get_user_by_id(userid)
+    search_query = request.args.get("search_query", "")
+    search_type = request.args.get("search_type", "all")  # 기본값은 'all'
+    page = request.args.get("page", 1, type=int)
+    per_page = 10
+    offset = (page - 1) * per_page
+
+    db_manager = DBManager()
+
+    # SQL 쿼리 및 파라미터 가져오기
+    sql, values = db_manager.get_india_cctv_query(search_query, search_type, per_page, offset)
+    count_sql, count_values = db_manager.get_india_cctv_count_query(search_query, search_type)
+
+    # 검색된 가로등 목록 가져오기
+    street_lights = db_manager.execute_query(sql, values)
+
+    # 전체 CCTV 개수 카운트
+    total_posts = db_manager.execute_count_query(count_sql, count_values)
+
+    # 페이지네이션 계산
+    total_pages = (total_posts + per_page - 1) // per_page
+    prev_page = page - 1 if page > 1 else None
+    next_page = page + 1 if page < total_pages else None
+
+    return render_template(
+        "user_dashboard_india.html",
+        street_lights=street_lights,
+        search_query=search_query,
+        search_type=search_type,
+        page=page,
+        total_posts=total_posts,
+        per_page=per_page,
+        total_pages=total_pages,
+        prev_page=prev_page,
+        next_page=next_page,
+        user = user
+    )
+
+
+
+
+#탈퇴회원 페이지
+@app.route('/delete_user')
+def delete_user():
+    return render_template('delete_user.html')
+
+@app.route('/edit_password')
+def edit_password():
+    return render_template('edit_password.html')
 
 ## 로그아웃 라우트
 @app.route('/logout')
@@ -189,304 +333,15 @@ def logout():
     return redirect('/')  # 로그아웃 후 로그인 페이지로 리디렉션
 
 ### 관리자 페이지
-@app.route('/admin')
+@app.route('/admin_dashboard')
 @admin_required  # 관리자만 접근 가능
 def admin_dashboard():
-    # 승인 대기 중인 사용자들 조회
-    pending_count= manager.pending_member_count() #가입신청 회원 수
-    activation_count = manager.activation_request_count() #휴면계정 활성화 신청 회원 수
-    service_approval_count = manager.service_approval_count() #서비스 활성화 신청 회원 수
-
-
-    # 가입 승인 대기 중인 사용자가 있으면 Flash 메시지 추가
-    if pending_count >0: 
-        flash(f'가입 승인 요청이 {pending_count}건 있습니다.', 'info')
-    
-    # 휴면계정 활성화 신청 회원이 있으면 Flash 메시지 추가
-    if activation_count >0:
-        flash(f'휴면계정 활성화 요청이 {activation_count}건 있습니다.', 'warning')
-
-    if service_approval_count>0:
-        flash(f'서비스 활성화 신청이 {service_approval_count}건 있습니다.','danger')
-
-    return render_template('admin_dashboard.html')  # 관리자 대시보드 렌더링
-
-###관리자 회원관리
-
-##회원 목록 관리 페이지
-@app.route('/admin/member_management')
-@admin_required
-def member_management():
-    return render_template('member_management.html')
-
-## 모든 회원 목록
-@app.route('/admin/members')
-@admin_required
-def members():
-    # 모든 회원 정보 조회
-    number = manager.all_member_count()
-    members = manager.get_all_members()
-    return render_template('members.html', members=members, number = number )
-
-## 서비스 이용 가능한 일반회원 목록
-@app.route('/admin/can_service_members')
-@admin_required
-def can_service_members():
-    number = manager.service_member_count()
-    members = manager.get_members_with_service_permission()  # DB에서 일반회원 목록 불러오기
-    return render_template('can_service_members.html', members=members, number=number)
-
-## 서비스 이용 차단된 회원 목록
-@app.route('/admin/denial_service_member')
-@admin_required
-def denial_service_member():
-    number = manager.denied_member_count()
-    members = manager.get_denied_service_members()  # DB에서 서비스 차단된 회원 목록 불러오기
-    return render_template('denial_service_member.html', members=members, number=number)
-
-## 회원 서비스 사용 권한
-@app.route('/toggle_service_permission/<userid>', methods=['POST'])
-@admin_required
-def toggle_service_permission(userid):
-    # 현재 상태를 반전시키기
-    member = manager.get_member_by_id(userid)  # 현재 상태 가져오기
-    if member:
-        new_status = not member['can_service']  # 현재 상태의 반대로 설정
-        if manager.update_service_permission(userid, new_status):  # DB 업데이트
-            if new_status == 0:
-                flash(f'{userid}님의 서비스사용 권한이 차단 되었습니다.', 'danger')
-                return redirect(url_for('can_service_members'))
-            else : 
-                flash(f'{userid}님의 서비스사용 권한이 허용 되었습니다.', 'success')
-                return redirect(url_for('denial_service_member'))
-        else:
-            flash(f'{userid}님의 서비스사용 권한 변경에 실패했습니다.', 'error')
-    return redirect(url_for('member_management'))
-
-## 가입 승인 대기중인 회원 목록
-@app.route('/admin/pending_members')
-@admin_required
-def pending_members():
-    number = manager.pending_member_count()
-    members = manager.get_pending_members()  # DB에서 가입 대기중인 비회원 목록 불러오기
-    return render_template('pending_members.html', members=members, number=number)
-
-# 회원 상태 승인으로 변경
-@app.route('/approve_user/<userid>', methods=['POST'])
-@admin_required
-def approve_user(userid):
-    # 사용자의 status를 'approved'로 변경하고 role을 'can_service_memeber'로 설정
-    if manager.approve_member(userid):
-        flash(f'{userid} 회원의 승인 처리가 완료되었습니다.', 'success')
-    else:
-        flash(f'{userid} 회원 승인 처리에 실패했습니다.', 'error')
-    return redirect(url_for('pending_members'))  # 회원 목록 페이지로 리디렉션
-
-
-## 휴면 회원 목록
-@app.route('/admin/dormant_members')
-@admin_required
-def dormant_members():
-    number = manager.dormant_member_count() 
-    dormant_members = manager.get_dormant_members()
-    return render_template('dormant_members.html', dormant_members=dormant_members, number=number)
-
-## 휴면 회원 활성화 하기
-@app.route('/admin/members/activate/<userid>', methods=['POST'])
-@admin_required
-def activate_member(userid):
-    # 해당 회원을 활성화하는 로직
-    dormant_members = manager.get_dormant_members()  # 휴면 회원 정보를 가져오는 메서드 (예시)
-    for member in dormant_members:
-        if member :
-            new_role = 'can_service_member'
-            # 'role'을 'can_service_member'로 변경하고 'can_service'를 1로 설정
-            manager.update_member_status(new_role, 1, userid)
-            # 활성화 후 관리자 페이지로 리디렉션
-            flash(f'{userid}님의 휴면 상태가 활성화로 업데이트 되었습니다.', 'success')
-            return redirect(url_for('dormant_members'))
-    else:
-        # 잘못된 접근 시 리디렉션
-        flash(f'{userid}님의 휴면 상태를 변경하지 못했습니다.', 'error')
-        return redirect(url_for('dormant_members'))
-
-##서비스 차단 회원 목록에서 강제탈퇴 누른 후 탈퇴진행
-@app.route('/admin/remove_member/<userid>', methods=['GET','POST'])
-@admin_required
-def admin_remove_member(userid):
-    # 
-    if request.method == 'GET':
-        return render_template('remove_member_dashboard.html', userid=userid)
-    
-    # POST 요청 시 회원 강제 탈퇴 처리
-    if request.method == 'POST':
-        member = manager.get_denied_service_member_by_id(userid)
-        userid = member['userid']
-        username = member['username']
-        email = member['email']
-        last_login = member['last_login'].strftime('%Y-%m-%d') if member['last_login'] else None
-        #null값을 none으로 받아오기 때문에 none값을 기본값으로 설정해야함
-        join_date = member['join_date'].strftime('%Y-%m-%d')
-        birthday = member['birthday'].strftime('%y-%m-%d')
-        reason = request.form['reason']  # 이유를 받아서 처리
-        notes = request.form.get('notes', None)#추가 설명은 선택적 필드입니다.
-        
-        # 회원을 강제 탈퇴시키고, removed_members 테이블에 기록
-        manager.add_removed_member(userid, username, email,last_login,join_date, birthday, removed_by='admin_initiated_deletion',reason=reason, notes=notes)
-        manager.delete_member(userid)
-        # 탈퇴 처리 후, 서비스 차단 목록 페이지로 리다이렉트
-        return redirect(url_for('denial_service_member'))
-    return redirect(url_for('denial_service_member'))
-
-## 강제탈퇴된 회원 목록
-@app.route('/admin/removed_members', methods=['GET'])
-@admin_required
-def removed_members():
-    # DB에서 강제 탈퇴된 회원 정보를 가져옵니다
-    members = manager.get_admin_removed_members()  # DB에서 정보를 가져오는 메서드
-    # 강제 탈퇴된 회원 수를 구합니다
-    number = len(members)
-    # 페이지 렌더링 시 데이터 전달
-    return render_template('admin_removed_members.html', members=members, number=number)
-
-## 회원가입 거부 회원 테이블에서 삭제 후 데이터 romoved_members에 넣기
-@app.route('/admin/reject_member/<userid>', methods=['GET','POST'])
-@admin_required
-def reject_member(userid):
-    # 승인 거부 처리
-    # 승인 거부 시 rejected_membership.html 페이지 가져옴
-    if request.method == 'GET':
-        return render_template('rejected_membership.html', userid=userid)
-    
-    #rejected_membership.html에서 승인거부시 데이터는 removed_members에 저장 후 members에서 삭제
-    if request.method == 'POST':
-        member = manager.get_pending_member_by_id(userid)  # 승인 대기 중인 회원 정보를 가져옴
-        userid = member['userid']
-        username = member['username']
-        email = member['email']
-        last_login = member['last_login'].strftime('%Y-%m-%d') if member['last_login'] else None
-        join_date = member['join_date'].strftime('%Y-%m-%d')
-        birthday = member['birthday'].strftime('%Y-%m-%d')
-        reason = request.form['reason']  # 이유를 받아서 처리
-        notes = request.form.get('notes', None)  # 추가 설명은 선택적 필드입니다.
-
-        # 승인 거부 처리와 데이터 저장
-        removed_by = 'rejected_membership'  # 승인 거부 사유
-        manager.add_removed_member(userid, username, email, last_login, join_date, birthday, removed_by, reason, notes)
-        manager.delete_member(userid)  # 회원 삭제
-
-    # 승인 거부 처리 후, 대기 회원 목록 페이지로 리다이렉트
-    return redirect(url_for('pending_members'))
-
-#승인거부 비회원 목록 보기
-@app.route('/admin/reject_member/rejected_members', methods=['GET'])
-@admin_required
-def rejected_members():
-    # DB에서 강제 탈퇴된 회원 정보를 가져옵니다
-    members = manager.get_admin_rejected_members()  # DB에서 정보를 가져오는 메서드
-    # 강제 탈퇴된 회원 수를 구합니다
-    number = len(members)
-    # 페이지 렌더링 시 데이터 전달
-    return render_template('admin_rejected_members.html', members=members, number=number)
-
-#회원탈퇴 회원 목록 보기
-@app.route('/admin/member_management/self_delete_member')
-@admin_required
-def admin_self_delete_members():
-    members = manager.get_self_delete_members()
-    if members is None:
-        members = []
-
-    number = len(members)
-    return render_template('admin_self_delete_members.html', members=members, number=number)
-
-
-### 회원 페이지
-##로그인 후 회원페이지
-@app.route('/dashboard')
-@login_required  # 로그인된 사용자만 접근 가능
-def dashboard():
-    userid = session['user']
-    member = manager.get_member_by_id(userid)
-    return render_template('dashboard.html', member = member )
-
-
-##로그인 후 휴면 회원일 경우 페이지
-@app.route('/dormant_member_dashboard')
-@login_required #로그인된 사용자만 접근 가능
-def dormant_member_dashboard():
-    userid = session['user']
-    member = manager.get_dormant_by_id(userid)
-    return render_template('dormant_member_dashboard.html', member = member)
-
-
-#휴면 회원이 승인요청버튼 누르면 플래쉬매세지 출력
-@app.route('/active_approve_request', methods=['GET','POST'])
-@login_required
-def active_approve_request():
-    userid = session['user']
-    result = manager.active_request_approval(userid)
-    if result:
-        flash("승인 요청이 완료되었습니다. 관리자의 승인을 기다려주세요.", "success")
-    else:
-        flash("승인 요청 중 오류가 발생했습니다. 다시 시도해주세요.", "error")
-    return redirect(url_for('dormant_member_dashboard'))
-
-#회원 정보 수정 
-@app.route('/update_profile/<userid>', methods=['GET', 'POST'])
-@login_required
-def update_profile(userid):
-    member = manager.get_member_by_id(userid)  # 회원 정보 가져오기
-
-    if request.method == 'POST':
-        # 폼에서 입력한 값 받아오기
-        username = request.form['username'] if request.form['username'] else member.username
-        email = request.form['email'] if request.form['email'] else member.email
-        birthday = request.form['birthday'] if request.form['birthday'] else member.birthday
-        password = request.form['password'] if request.form['password'] else None
-        confirm_password = request.form['confirm_password'] if request.form['confirm_password'] else None
-
-        # 비밀번호가 입력되었으면 확인
-        if password and password == confirm_password:
-            # 비밀번호 업데이트
-            manager.update_password(userid, password)
-
-        # 나머지 정보 업데이트
-        manager.update_member_info(userid, username, email, birthday)
-
-        # 성공 메시지나 다른 페이지로 리디렉션
-        flash('회원 정보가 성공적으로 수정되었습니다.', 'success')
-        return redirect(url_for('dashboard'))
-
-    return render_template('update_profile.html', member=member)
+    adminid = session['adminid']
+    admin = manager.get_admin_by_id(adminid)
+    return render_template('admin_dashboard.html', admin=admin)  # 관리자 대시보드 렌더링
 
 
 
-#로그인 후 서비스 정지 회원이 서비스 복구 신청 눌렀을때
-@app.route('/denied_service_member_dashboard/<userid>', methods=['GET','POST'])
-@login_required
-def denied_service_member_dashboard(userid):
-    if request.method == 'GET':
-        member= manager.get_member_by_id(userid)
-        return render_template('denied_service_member_dashboard.html', member=member)
-    
-    if request.method == 'POST':
-        flash("서비스 활성화 신청이 접수되었습니다. 관리자 승인 대기 중입니다.", "success")
-    else:
-        flash("서비스 활성화 신청이 실패했습니다. 다시 신청 해주세요", "error")    
-    return redirect(url_for('denied_service_member_dashboard'))  
-
-#서비스 정지 회원이 승인요청 버튼 눌리면 관리자페이지에 표시
-@app.route('/service_approve_request', methods=['GET','POST'])
-@login_required
-def service_approve_request():
-    userid = session['user']
-    result = manager.service_request_approval(userid)
-    if result:
-        flash("승인 요청이 완료되었습니다. 관리자의 승인을 기다려주세요.", "success")
-    else:
-        flash("승인 요청 중 오류가 발생했습니다. 다시 시도해주세요.", "error")
-    return redirect(url_for('denied_service_member_dashboard', userid= userid))
 
 # 회원 탈퇴하기
 @app.route('/self_delete_member/<userid>', methods=['GET','POST'])
@@ -721,3 +576,4 @@ def health_status_check(userid):
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5010, debug=True)
+

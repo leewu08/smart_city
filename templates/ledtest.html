@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LED Control</title>
+    <script>
+        // LED ON 버튼 클릭 시 요청 보내는 함수
+        function turnLEDOn() {
+            fetch("http://10.0.66.83:5010/led_control?command=LED_ON")
+                .then(response => response.text())
+                .then(data => console.log(data)) // 응답 확인용
+                .catch(error => console.error("Error:", error));
+        }
+
+        // LED OFF 버튼 클릭 시 요청 보내는 함수
+        function turnLEDOff() {
+            fetch("http://10.0.66.83:5010/led_control?command=LED_OFF")
+                .then(response => response.text())
+                .then(data => console.log(data)) // 응답 확인용
+                .catch(error => console.error("Error:", error));
+        }
+    </script>
+</head>
+<body>
+    <h1>LED Control</h1>
+    <button onclick="turnLEDOn()">Turn LED On</button>
+    <button onclick="turnLEDOff()">Turn LED Off</button>
+</body>
+</html>

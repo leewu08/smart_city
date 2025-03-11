@@ -1,0 +1,251 @@
+{% extends "base.html" %}
+
+{% block title %}문의 보기 - 스마트 도시{% endblock %}
+
+{% block extra_css %}
+<style>
+    .inquiry-container {
+        max-width: 1200px;
+        margin: 30px auto;
+        padding: 20px;
+        background-color: var(--bg-color);
+        border-radius: 8px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .inquiry-title {
+        font-size: 24px;
+        margin-bottom: 20px;
+        padding-bottom: 10px;
+        border-bottom: 2px solid var(--primary-color);
+        color: var(--text-color);
+    }
+
+    .inquiry-filters {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 20px;
+        align-items: center;
+    }
+
+    .inquiry-search {
+        display: flex;
+        gap: 10px;
+    }
+
+    .inquiry-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .inquiry-table th, .inquiry-table td {
+        padding: 12px 15px;
+        text-align: left;
+        border-bottom: 1px solid var(--border-color);
+    }
+
+    .inquiry-table th {
+        background-color: var(--secondary-bg-color);
+        color: var(--text-color);
+        font-weight: bold;
+    }
+
+    .inquiry-table tr:hover {
+        background-color: var(--hover-color);
+    }
+
+    .status-pending {
+        background-color: #ffeeba;
+        color: #856404;
+        padding: 3px 8px;
+        border-radius: 4px;
+        font-size: 12px;
+    }
+
+    .status-answered {
+        background-color: #c3e6cb;
+        color: #155724;
+        padding: 3px 8px;
+        border-radius: 4px;
+        font-size: 12px;
+    }
+
+    .pagination {
+        display: flex;
+        justify-content: center;
+        margin-top: 20px;
+    }
+
+    .pagination a {
+        color: var(--text-color);
+        float: left;
+        padding: 8px 16px;
+        text-decoration: none;
+        transition: background-color .3s;
+        border: 1px solid var(--border-color);
+        margin: 0 4px;
+    }
+
+    .pagination a.active {
+        background-color: var(--primary-color);
+        color: white;
+        border: 1px solid var(--primary-color);
+    }
+
+    .pagination a:hover:not(.active) {
+        background-color: var(--secondary-bg-color);
+    }
+
+    .btn-new-inquiry {
+        background-color: var(--primary-color);
+        color: white;
+        border: none;
+        padding: 8px 16px;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: background-color 0.3s;
+        text-decoration: none;
+    }
+
+    .btn-new-inquiry:hover {
+        background-color: #0056b3;
+        color: white;
+    }
+
+    .no-inquiries {
+        text-align: center;
+        padding: 30px;
+        color: var(--text-color);
+        font-style: italic;
+    }
+
+    .has-file {
+        color: #0056b3;
+        font-size: 14px;
+    }
+
+    @media (max-width: 768px) {
+        .inquiry-filters {
+            flex-direction: column;
+            gap: 10px;
+            align-items: flex-start;
+        }
+        
+        .inquiry-table th:nth-child(3), 
+        .inquiry-table td:nth-child(3) {
+            display: none;
+        }
+        
+        .inquiry-table th, .inquiry-table td {
+            padding: 8px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="inquiry-container">
+    <h2 class="inquiry-title">문의 목록</h2>
+    
+    <div class="inquiry-filters">
+        <div class="inquiry-search">
+            <input type="text" class="form-control" placeholder="검색어를 입력하세요">
+            <button class="btn btn-primary">검색</button>
+        </div>
+        
+        <a href="{{ url_for('inquire') }}" class="btn-new-inquiry">
+            <i class="fas fa-plus"></i> 새 문의하기
+        </a>
+    </div>
+    
+    {% if inquiries %}
+    <table class="inquiry-table">
+        <thead>
+            <tr>
+                <th>번호</th>
+                <th>문의 제목</th>
+                <th>첨부파일</th>
+                <th>문의 일시</th>
+                <th>상태</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for inquiry in inquiries %}
+            <tr onclick="location.href='{{ url_for('view_inquiries', inquiry_id=inquiry.inquiries_id) }}'" style="cursor: pointer;">
+                <td>{{ inquiry.inquiries_id }}</td>
+                <td>{{ inquiry.inquiry_reason }}</td>
+                <td>
+                    {% if inquiry.capture_file %}
+                    <span class="has-file"><i class="fas fa-file-image"></i> 첨부파일</span>
+                    {% else %}
+                    -
+                    {% endif %}
+                </td>
+                <td>{{ inquiry.inquiry_time }}</td>
+                <td>
+                    {% if inquiry.manager_status == 'pending' %}
+                    <span class="status-pending">대기중</span>
+                    {% else %}
+                    <span class="status-answered">답변완료</span>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    
+    <div class="pagination">
+        {% if current_page > 1 %}
+        <a href="{{ url_for('inquiries_list', page=current_page-1) }}">&laquo;</a>
+        {% endif %}
+        
+        {% for i in range(1, total_pages + 1) %}
+            {% if i == current_page %}
+            <a href="{{ url_for('inquiries_list', page=i) }}" class="active">{{ i }}</a>
+            {% else %}
+            <a href="{{ url_for('inquiries_list', page=i) }}">{{ i }}</a>
+            {% endif %}
+        {% endfor %}
+        
+        {% if current_page < total_pages %}
+        <a href="{{ url_for('inquiries_list', page=current_page+1) }}">&raquo;</a>
+        {% endif %}
+    </div>
+    
+    {% else %}
+    <div class="no-inquiries">
+        <p>등록된 문의가 없습니다.</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // 날짜 표시
+        const currentDateElement = document.getElementById('current-date');
+        const now = new Date();
+        const options = { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' };
+        currentDateElement.textContent = now.toLocaleDateString('ko-KR', options);
+        
+        // 다크모드 토글
+        const darkModeToggle = document.getElementById('dark-mode-toggle');
+        const body = document.body;
+        
+        // 로컬 스토리지에서 다크모드 설정 불러오기
+        const isDarkMode = localStorage.getItem('darkMode') === 'true';
+        if (isDarkMode) {
+            body.classList.add('dark-mode');
+            darkModeToggle.textContent = '라이트모드';
+        }
+        
+        darkModeToggle.addEventListener('click', function() {
+            body.classList.toggle('dark-mode');
+            const isDark = body.classList.contains('dark-mode');
+            localStorage.setItem('darkMode', isDark);
+            darkModeToggle.textContent = isDark ? '라이트모드' : '다크모드';
+        });
+    });
+</script>
+{% endblock %}

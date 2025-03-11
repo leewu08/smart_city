@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+{% block title%}도로용 CCTV 페이지{% endblock %}
+{% block extra_css %}
+<style>
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px;
+    }
+    table, th, td {
+        border: 1px solid #ddd;
+    }
+    th, td {
+        padding: 8px;
+        text-align: left;
+    }
+    .search-container {
+        display: flex;
+        justify-content: flex-end;  /* 오른쪽 정렬 */
+        margin-right: 20px;  /* 우측 여백 */
+    }
+    .search-container input {
+        padding: 8px;
+        margin-right: 10px;
+    }
+    .search-container button {
+        padding: 8px 16px;
+    }
+    
+    .search-container form {
+        display: flex;
+        gap: 10px; /* 요소들 사이에 간격을 추가 */
+        align-items: center; /* 세로로 정렬 */
+    }
+
+    .search-container label, 
+    .search-container input, 
+    .search-container select, 
+    .search-container button {
+        margin: 5px; /* 각 요소에 여백을 추가 */
+    }
+</style>
+{% endblock %}
+{% block content %}
+<!-- 가로등 조회 폼 -->
+<div class="search-container">
+    <form method="get" action="{{ url_for('user_dashboard_road', userid=session['user_id']) }}">
+        <label for="search_type">검색 타입:</label>
+        <select name="search_type" id="search_type">
+            <option value="street_light_id" {% if search_type == 'street_light_id' %}selected{% endif %}>가로등 ID</option>
+            <option value="street_light_location" {% if search_type == 'location' %}selected{% endif %}>위치</option>
+            <option value="all" {% if search_type == 'all' %}selected{% endif %}>전체</option>
+        </select>
+        
+        <label for="search_query">가로등 ID 또는 위치:</label>
+        <input type="text" name="search_query" id="search_query" placeholder="가로등 ID 또는 위치" value="{{ search_query }}">
+        
+        <button type="submit">검색</button>
+    </form>
+</div>
+
+<!-- 가로등 목록 테이블 -->
+<table>
+    <thead>
+        <tr>
+            <th>가로등 ID</th>
+            <th>위치</th>
+            <th>상세 보기</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for street_light in street_lights %}
+            <tr>
+                <td>{{ street_light.street_light_id }}</td>
+                <td>{{ street_light.location }}</td>
+                <td><a href="#">상세 보기</a></td>
+            </tr>
+        {% else %}
+            <tr>
+                <td colspan="3">검색된 가로등 정보가 없습니다.</td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<!-- 페이지네이션 -->
+<div class="pagination">
+    {% if prev_page %}
+        <a href="{{ url_for('user_dashboard_road', search_query=search_query, search_type=search_type, page=prev_page) }}">이전</a>
+    {% endif %}
+    <span>페이지 {{ page }} / {{ total_pages }}</span>
+    {% if next_page %}
+        <a href="{{ url_for('user_dashboard_road', search_query=search_query, search_type=search_type, page=next_page) }}">다음</a>
+    {% endif %}
+</div>
+{% endblock %}
+</body>
+</html>

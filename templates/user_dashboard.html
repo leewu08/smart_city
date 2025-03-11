@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}회원페이지{% endblock %}
+{% block content %}
+<main class="content-area">
+    <div class="swiper-container">
+        <div class="swiper-wrapper">
+            <div class="swiper-slide">
+                <img src="{{ url_for('static', filename='images/image1.png') }}" alt="이미지 1">
+            </div>
+            <div class="swiper-slide">
+                <img src="{{ url_for('static', filename='images/image2.png') }}" alt="이미지 2">
+            </div>
+            <div class="swiper-slide">
+                <img src="{{ url_for('static', filename='images/image3.png') }}" alt="이미지 3">
+            </div>
+        </div>
+        <div class="swiper-button-prev"></div>
+        <div class="swiper-button-next"></div>
+        <div class="swiper-pagination"></div>
+    </div>
+
+</main>
+{% endblock %}
