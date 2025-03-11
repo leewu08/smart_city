@@ -1,7 +1,12 @@
 {% extends "base.html" %}
 {% block title %}회원 문의보기 페이지{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/user_dashboard_inquiries_view.css') }}">
+{% endblock %}
+
 {% block content %}
-<table border="1">
+<table class="inquiry-table">
     <thead>
         <tr>
             <th>순번</th>
@@ -17,15 +22,13 @@
             <td>{{ post.inquiries_id }}</td>
             <td>{{ post.inquiry_reason }}</td>
             <td>
-                <a href="#">
-                    <button>상세보기</button>
-                </a>
+                <a href="#" class="detail-button">상세보기</a>
             </td>
             <td>
                 {% if post.answer_status == 'pending' %}
-                    답변 대기 중
+                    <span class="status pending">답변 대기 중</span>
                 {% else %}
-                    답변 완료
+                    <span class="status completed">답변 완료</span>
                 {% endif %}
             </td>
             <td>{{ post.inquiry_time }}</td>

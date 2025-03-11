@@ -142,8 +142,8 @@ button:hover {
 
 table {
     width: 100%;
-    border-collapse: collapse;
-    min-height: 400px;
+    max-height: 600px; 
+    border-collapse: collapse; 
 }
 
 th, td {
@@ -160,7 +160,9 @@ th {
 
 td {
     color: var(--text-color);
+    border: 1px solid #ddd;
 }
+
 
 tr:hover {
     background-color: var(--table-row-hover-bg);
