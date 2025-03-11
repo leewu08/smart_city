@@ -350,13 +350,13 @@ class DBManager:
             return False
         finally:
             self.disconnect()
-    
-    #회원 문의 정보 가져오기
-    def get_enquired_posts_member(self):
+
+    #문의 정보 전체 가져오기
+    def get_posts_info(self):
         try:
             self.connect()
             sql="""
-            SELECT * FROM enquiries WHERE userid != '비회원' 
+            SELECT * FROM inquiries 
             """
             self.cursor.execute(sql)
             return self.cursor.fetchall()

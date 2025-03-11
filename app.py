@@ -340,14 +340,14 @@ def user_dashboard_inquiries(userid):
         return redirect(url_for('user_dashboard', user=user))
     
 ##문의된 정보 보기
-@app.route('/user_dashboard/inquires_list/<userid>', methods=['GET', 'POST'])
-@admin_required
-def admin_management_posts():
-    return render_template("admin_management_posts.html")    
-
-
-
-
+@app.route('/user_dashboard/inquiries_view/<userid>')
+@login_required
+def user_dashboard_inquiries_view(userid):
+    user = manager.get_user_by_id(userid)
+    posts = manager.get_posts_info()
+    return render_template("user_dashboard_inquiries_view.html", user=user, posts=posts)  
+   
+    
 
 
 #탈퇴회원 로그인 후 dashboard페이지
@@ -374,8 +374,6 @@ def admin_dashboard():
     adminid = session['adminid']
     admin = manager.get_admin_by_id(adminid)
     return render_template('admin_dashboard.html', admin=admin)  # 관리자 대시보드 렌더링
-
-
 
 
 # 회원 탈퇴하기
@@ -407,22 +405,6 @@ def self_delete_member(userid):
 
 
 ## 기능소개 페이지
-
-
-
-#로그인시 기능소개
-@app.route('/login/feature')
-@login_required
-def login_feature():
-    userid = session['user']
-    member = manager.get_member_by_id(userid) 
-    return render_template("login_feature.html", member = member)
-
-
-
-
-
-
 
 
 ##관리자 페이지에서 문의정보 보기
