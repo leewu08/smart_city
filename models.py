@@ -236,23 +236,29 @@ class DBManager:
     def get_road_cctv_query(self, search_query, search_type, per_page, offset):
         if search_type == "street_light_id":
             sql = """
-            SELECT * FROM street_lights 
-            WHERE street_light_id LIKE %s and purpose = "도로"
+            SELECT s.*, c.cctv_ip 
+            FROM street_lights s
+            LEFT JOIN cameras c ON s.street_light_id = c.street_light_id
+            WHERE s.street_light_id LIKE %s AND s.purpose = "도로"
             LIMIT %s OFFSET %s
             """
             values = (f"%{search_query}%", per_page, offset)
 
         elif search_type == "street_light_location":
             sql = """
-            SELECT * FROM street_lights 
-            WHERE location LIKE %s and purpose = "도로"
+            SELECT s.*, c.cctv_ip 
+            FROM street_lights s
+            LEFT JOIN cameras c ON s.street_light_id = c.street_light_id
+            WHERE s.location LIKE %s AND s.purpose = "도로"
             LIMIT %s OFFSET %s
             """
             values = (f"%{search_query}%", per_page, offset)
         else:  # all 또는 기본값
             sql = """
-            SELECT * FROM street_lights 
-            WHERE (location LIKE %s OR street_light_id LIKE %s) and purpose = "도로"
+            SELECT s.*, c.cctv_ip 
+            FROM street_lights s
+            LEFT JOIN cameras c ON s.street_light_id = c.street_light_id
+            WHERE (s.location LIKE %s OR s.street_light_id LIKE %s) AND s.purpose = "도로"
             LIMIT %s OFFSET %s
             """
             values = (f"%{search_query}%", f"%{search_query}%", per_page, offset)
@@ -313,23 +319,29 @@ class DBManager:
     def get_sidewalk_cctv_query(self, search_query, search_type, per_page, offset):
         if search_type == "street_light_id":
             sql = """
-            SELECT * FROM street_lights 
-            WHERE street_light_id LIKE %s and purpose = "인도"
+            SELECT s.*, c.cctv_ip 
+            FROM street_lights s
+            LEFT JOIN cameras c ON s.street_light_id = c.street_light_id
+            WHERE s.street_light_id LIKE %s AND s.purpose = "인도"
             LIMIT %s OFFSET %s
             """
             values = (f"%{search_query}%", per_page, offset)
 
         elif search_type == "street_light_location":
             sql = """
-            SELECT * FROM street_lights 
-            WHERE location LIKE %s and purpose = "인도"
+            SELECT s.*, c.cctv_ip 
+            FROM street_lights s
+            LEFT JOIN cameras c ON s.street_light_id = c.street_light_id
+            WHERE s.street_light_id LIKE %s AND s.purpose = "인도"
             LIMIT %s OFFSET %s
             """
             values = (f"%{search_query}%", per_page, offset)
         else:  # all 또는 기본값
             sql = """
-            SELECT * FROM street_lights 
-            WHERE (location LIKE %s OR street_light_id LIKE %s) and purpose = "인도"
+            SELECT s.*, c.cctv_ip 
+            FROM street_lights s
+            LEFT JOIN cameras c ON s.street_light_id = c.street_light_id
+            WHERE (s.location LIKE %s OR s.street_light_id LIKE %s) AND s.purpose = "인도"
             LIMIT %s OFFSET %s
             """
             values = (f"%{search_query}%", f"%{search_query}%", per_page, offset)
@@ -361,6 +373,7 @@ class DBManager:
         
         return sql, values
     
+    #선택된 가로등 정보 가져오기
     def get_streetlight_by_info(self,street_light_id:int):
         try:
             self.connect()
@@ -374,6 +387,24 @@ class DBManager:
         finally:
             self.disconnect()
 
+    # 카메라 정보 가져오기
+    def get_camera_by_info(self,street_light_id:int):
+        try:
+            self.connect()
+            sql = """
+                SELECT *, s.location, s.purpose
+                FROM cameras c
+                JOIN street_lights s ON c.street_light_id = s.street_light_id
+                WHERE c.street_light_id = %s
+                """
+            value = (street_light_id,)
+            self.cursor.execute(sql, value)
+            return self.cursor.fetchone()
+        except mysql.connector.Error as error:
+            print(f"카메라라 정보 조회 중 오류 발생: {error}")
+            return None
+        finally:
+            self.disconnect()
 
 
     ## 로그인 후 문의한 내용 저장
@@ -382,9 +413,9 @@ class DBManager:
             self.connect()
             # equires에 CURDATE()를 명시적으로 설정
             sql = """
-            INSERT INTO inquiries (user_id, capture_file, inquiry_reason, detail_reason)
-            VALUES (%s, %s, %s, %s)
-            """
+                INSERT INTO inquiries (user_id, capture_file, inquiry_reason, detail_reason)
+                VALUES (%s, %s, %s, %s)
+                """
             values = (userid, filename, inquiry_reason, detail_reason)
             self.cursor.execute(sql, values)
             self.connection.commit()

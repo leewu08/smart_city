@@ -2,10 +2,27 @@
 {% block title%}도로용 CCTV 페이지{% endblock %}
 {% block extra_css %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/user_dashboard.css') }}">
+<style>
+.search-container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between; /* 왼쪽 정렬 + 오른쪽 정렬 */
+    width: 100%;
+}
+
+.search-container .total-count {
+    font-weight: bold;
+}
+</style>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 {% endblock %}
 {% block content %}
 <!-- 가로등 조회 폼 -->
 <div class="search-container">
+    <div>
+        <i class="fa-solid fa-lightbulb" style="color: rgb(236, 119, 9);"></i>
+        <span class="total-count">검색된 가로등 : {{ total_posts }}개</span>
+    </div>
     <form method="get" action="{{ url_for('user_dashboard_road', userid=user.user_id) }}">
         <label for="search_type">검색 타입:</label>
         <select name="search_type" id="search_type">
@@ -35,7 +52,11 @@
             <tr>
                 <td>{{ street_light.street_light_id }}</td>
                 <td>{{ street_light.location }}</td>
+                {% if street_light.cctv_ip %}
                 <td><a href="{{ url_for('user_dashboard_cctv', userid=user.user_id, street_light_id = street_light.street_light_id) }}">상세 보기</a></td>
+                {% else %}
+                <td>미설치</td>
+                {% endif %}
             </tr>
         {% else %}
             <tr>

@@ -19,14 +19,38 @@
     .cctv-item:hover {
         background-color: #f0f0f0;
     }
+    
+    .cctv-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+    }
+    .cctv-stream {
+        width: 100%;
+        max-width: 800px;
+    }
+    .cctv-info {
+        margin-top: 20px;
+    }
+    #video-stream {
+        max-width: 100%;
+        border-radius: 10px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="container-fluid">
-    <div class="row">
-        <div class="col-md-4 cctv-list">
-            <h3>CCTV 확인</h3>  
+<div class="container">
+    <h1>📹 {{ camera.location }} CCTV</h1>
+    <div class="cctv-container">
+        <div class="cctv-stream">
+            <img id="video-stream" src="http://{{camera.cctv_ip}}:5000/stream" alt="CCTV Stream">
+        </div>
+        <div class="cctv-info">
+            <h2>실시간 영상 스트리밍 중...</h2>
+            <p>해당 CCTV는 {{ camera.location }} 위치에서 {{ camera.purpose}}를 실시간 모니터링 중입니다.</p>
         </div>
     </div>
 </div>

@@ -260,7 +260,6 @@ def user_dashboard_road(userid):
 
     # 검색된 가로등 목록 가져오기
     street_lights = db_manager.execute_query(sql, values)
-
     # 전체 CCTV 개수 카운트
     total_posts = db_manager.execute_count_query(count_sql, count_values)
 
@@ -330,11 +329,10 @@ def user_dashboard_sidewalk(userid):
 @login_required
 def user_dashboard_cctv(userid,street_light_id):
     user = manager.get_user_by_info(userid)
-    street_light = manager.get_streetlight_by_info(street_light_id)
-    return render_template('user_dashboard_cctv.html', user=user, street_light=street_light)
+    camera = manager.get_camera_by_info(street_light_id)
+    return render_template('user_dashboard_cctv.html', user=user, camera=camera)
 
-##회원페이지 문의하기
-#회원페이지에서 문의하기
+#회원페이지 문의하기
 @app.route('/user_dashboard/inquiries/<userid>', methods=['GET','POST'])
 @login_required
 def user_dashboard_inquiries(userid):
@@ -383,7 +381,7 @@ def user_dashboard_delete_user(userid):
         user = manager.get_user_by_id(userid)
         reason = request.form['reason']
         reason_detail = request.form['reason_detail']
-        manager.insert_deleted_user_table(userid)
+        manager.update_user_status(userid)
         flash("회원탈퇴가 완료되었습니다.", 'success')
         return redirect(url_for('index'))
     
