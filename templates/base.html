@@ -12,27 +12,23 @@
     {% endblock %}
 </head>
 <body>
-    <header>
+    <header class="header">
     {% block header %}
-        <div class="team-info">
-            <img src="{{ url_for('static', filename='images/logo.png') }}" alt="팀 로고" class="logo">
-            <span class="team-name">SAFELIGHT</span>
-        </div>
-        <div class="right-nav">
-            {{user.user_name}} 님 환영합니다
-            <button id="dark-mode-toggle" class="btn btn-secondary">다크모드</button>
-            <!-- 회원정보 수정 아이콘 버튼 -->
-            <a href="{{ url_for('update_profile', userid=session['user_id']) }}" class="btn btn-primary">
-                <i class="fas fa-user-edit"></i> 회원정보 수정
-            </a>
-            <!-- 로그아웃 버튼 -->
-            <a href="{{ url_for('logout') }}" class="btn btn-secondary">
-                <i class="fas fa-sign-out-alt"></i> 로그아웃
-            </a>
-        </div>
+    <button id="dark-mode-toggle" class="btn btn-secondary">다크모드</button>
+    <div class="logo-container">
+        <img src="{{ url_for('static', filename='images/logo.png') }}" alt="팀 로고" class="logo">
+    </div>
+    <div class="right-nav">
+        <span class="welcome-text">{{ user.user_name }} 님 환영합니다</span>
+        <a href="{{ url_for('update_profile', userid=session['user_id']) }}" class="btn btn-primary">
+            <i class="fas fa-user-edit"></i> 회원정보 수정
+        </a>
+        <a href="{{ url_for('logout') }}" class="btn btn-secondary">
+            <i class="fas fa-sign-out-alt"></i> 로그아웃
+        </a>
+    </div>
     {% endblock %}
     </header>
-    
     {% with messages = get_flashed_messages(with_categories=true) %}
     {% if messages %}
     <div>
@@ -80,6 +76,7 @@
             <div class="dropdown-content">
             </div>
             <div class="dropdown-content">
+                <a href="{{ url_for('need_login')}}">소개</a>
             </div>
             <div class="dropdown-content">
                 <a href="{{ url_for('need_login')}}">도로용 CCTV 보기</a>

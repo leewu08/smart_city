@@ -1,4 +1,4 @@
-from flask import Flask, session, url_for, render_template, flash, send_from_directory, jsonify ,request, redirect
+from flask import Flask, session, url_for, render_template, flash, before_render_template, send_from_directory, jsonify ,request, redirect
 import os
 import requests
 from datetime import datetime, timedelta
@@ -36,6 +36,15 @@ manager = DBManager()
 app.config['UPLOAD_FOLDER'] = os.path.join(app.root_path, 'static', 'uploads')
 # 업로드 폴더가 없으면 생성
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
+
+# Flask서버 실행시 보안상태 업데이트
+@app.before_request
+def update_security_status_on_start():
+    if not hasattr(app, "has_run"):
+        manager.update_security_status()
+        app.has_run = True  # 실행 여부 저장
+
+
 
 
 ### 푸터에 들어갈 날짜데이터 (context_processor 사용)
