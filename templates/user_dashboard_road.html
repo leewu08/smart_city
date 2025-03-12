@@ -35,13 +35,21 @@
             <tr>
                 <td>{{ street_light.street_light_id }}</td>
                 <td>{{ street_light.location }}</td>
-                <td><a href="{{ url_for('user_dashboard_cctv', userid=user.user_id, street_light_id = street_light.street_light_id) }}">상세 보기</a></td>
-            </tr>
-        {% else %}
-            <tr>
-                <td colspan="3">검색된 가로등 정보가 없습니다.</td>
+                <td><a href="{{ url_for('user_dashboard_cctv', userid=user.user_id, street_light_id=street_light.street_light_id) }}">상세 보기</a></td>
             </tr>
         {% endfor %}
+
+        <!-- 부족한 행을 채우기 -->
+        {% set remaining_rows = 10 - street_lights|length %}
+        {% if remaining_rows > 0 %}
+            {% for _ in range(remaining_rows) %}
+                <tr class="empty-row">
+                    <td>&nbsp;</td>
+                    <td>&nbsp;</td>
+                    <td>&nbsp;</td>
+                </tr>
+            {% endfor %}
+        {% endif %}
     </tbody>
 </table>
 

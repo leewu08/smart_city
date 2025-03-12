@@ -10,29 +10,30 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     {% block extra_css %}
     {% endblock %}
-</head>
-<body>
-    <header>
-    {% block header %}
-        <div class="team-info">
+    <header class="header">
+        <button id="dark-mode-toggle" class="btn btn-secondary">다크모드</button>
+        <div class="logo-container">
             <img src="{{ url_for('static', filename='images/logo.png') }}" alt="팀 로고" class="logo">
-            <span class="team-name">SAFELIGHT</span>
         </div>
         <div class="right-nav">
-            {{user.user_name}} 님 환영합니다
-            <button id="dark-mode-toggle" class="btn btn-secondary">다크모드</button>
-            <!-- 회원정보 수정 아이콘 버튼 -->
+            {% if 'user_id' in session %}
+            <span class="welcome-text">{{ session['user_name'] }} 님 환영합니다</span>
             <a href="{{ url_for('update_profile', userid=session['user_id']) }}" class="btn btn-primary">
                 <i class="fas fa-user-edit"></i> 회원정보 수정
             </a>
-            <!-- 로그아웃 버튼 -->
             <a href="{{ url_for('logout') }}" class="btn btn-secondary">
                 <i class="fas fa-sign-out-alt"></i> 로그아웃
             </a>
+            {% else %}
+            <a href="{{ url_for('login') }}" class="btn btn-primary me-2">
+                <i class="fas fa-sign-in-alt"></i> 로그인
+            </a>
+            <a href="{{ url_for('register') }}" class="btn btn-warning" style="margin-right: 20px;">
+                <i class="fas fa-user-plus"></i> 회원가입
+            </a>
+            {% endif %}
         </div>
-    {% endblock %}
     </header>
-    
     {% with messages = get_flashed_messages(with_categories=true) %}
     {% if messages %}
     <div>
@@ -80,6 +81,7 @@
             <div class="dropdown-content">
             </div>
             <div class="dropdown-content">
+                <a href="{{ url_for('need_login')}}">소개</a>
             </div>
             <div class="dropdown-content">
                 <a href="{{ url_for('need_login')}}">도로용 CCTV 보기</a>
@@ -103,9 +105,21 @@
             <p>프로젝트 팀장: 신준혁</p>
             <p>프로젝트 팀원: 황수용, 이지엽, 손유빈</p>
         </div>
-        <div class="footer-right" id="current-date"></div>
+        
+        <div class="footer-right">
+            <div id="current-date"></div>  <!-- 날짜 표시 -->
+            
+            {% if 'user_id' in session %}
+            <div class="delete-section">
+                <form action="{{ url_for('user_dashboard_delete_user', userid=session['user_id']) }}" method="get">
+                    <button type="submit" class="delete-btn btn btn-danger">회원 탈퇴</button>
+                </form>
+            </div>
+            {% endif %}
+        </div>
     </footer>
     {% endblock %}
+    
 
     <script src="https://cdn.jsdelivr.net/npm/swiper/swiper-bundle.min.js"></script>
     <script src="{{ url_for('static', filename='js/slider.js') }}"></script>
