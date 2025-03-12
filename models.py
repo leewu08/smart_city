@@ -52,8 +52,22 @@ class DBManager:
             self.disconnect()
 
     ## 회원 or 관리자 로그인
-    # 선택한 회원 정보 가져오기
+    # 선택한 회원 아이디,이름 가져오기
     def get_user_by_id(self, id):
+        try:
+            self.connect()
+            sql = "SELECT user_id,user_name FROM users WHERE user_id = %s"
+            value = (id,)
+            self.cursor.execute(sql,value)
+            return self.cursor.fetchone()
+        except mysql.connector.Error as error :
+            print(f"회원 정보 가져오기 연결 실패: {error}")
+            return None 
+        finally:
+            self.disconnect()
+
+    # 선택한 회원 모든정보 가져오기
+    def get_user_by_info(self, id):
         try:
             self.connect()
             sql = "SELECT * FROM users WHERE user_id = %s"
@@ -253,7 +267,7 @@ class DBManager:
         
         return sql, values
 
-    # 3. 쿼리를 실행하고 결과를 반환
+    # 쿼리를 실행하고 결과를 반환
     def execute_query(self, sql, values):
         try :
             self.connect()
@@ -266,7 +280,7 @@ class DBManager:
             self.disconnect()
         
     
-    # 4. 카운트를 실행하고 결과를 반환
+    # 카운트를 실행하고 결과를 반환
     def execute_count_query(self, count_sql, count_values):
         try :
             self.connect()
@@ -329,6 +343,20 @@ class DBManager:
             values = (f"%{search_query}%", f"%{search_query}%")
         
         return sql, values
+    
+    def get_streetlight_by_info(self,street_light_id:int):
+        try:
+            self.connect()
+            sql = "SELECT * FROM street_lights WHERE street_light_id = %s"
+            value = (street_light_id,)
+            self.cursor.execute(sql, value)
+            return self.cursor.fetchone()
+        except mysql.connector.Error as error:
+            print(f"가로등 정보 조회 중 오류 발생: {error}")
+            return None
+        finally:
+            self.disconnect()
+
 
 
     ## 로그인 후 문의한 내용 저장
@@ -351,13 +379,15 @@ class DBManager:
         finally:
             self.disconnect()
 
-    #문의 정보 전체 가져오기
+    #문의 정보 + 유저네임  가져오기
     def get_posts_info(self):
         try:
             self.connect()
             sql="""
-            SELECT * FROM inquiries 
-            """
+                SELECT *, u.user_name 
+                FROM inquiries i
+                JOIN users u ON i.user_id = u.user_id;
+                """
             self.cursor.execute(sql)
             return self.cursor.fetchall()
         except Exception as error:

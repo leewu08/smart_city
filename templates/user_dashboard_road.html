@@ -35,7 +35,7 @@
             <tr>
                 <td>{{ street_light.street_light_id }}</td>
                 <td>{{ street_light.location }}</td>
-                <td><a href="#">상세 보기</a></td>
+                <td><a href="{{ url_for('user_dashboard_cctv', userid=user.user_id, street_light_id = street_light.street_light_id) }}">상세 보기</a></td>
             </tr>
         {% else %}
             <tr>

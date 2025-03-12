@@ -13,13 +13,13 @@
 </head>
 <body>
     <header>
-        {% if 'user_id' in session %}
+    {% block header %}
         <div class="team-info">
             <img src="{{ url_for('static', filename='images/logo.png') }}" alt="팀 로고" class="logo">
             <span class="team-name">SAFELIGHT</span>
         </div>
         <div class="right-nav">
-            {{ session['user_name'] }} 님 환영합니다
+            {{user.user_name}} 님 환영합니다
             <button id="dark-mode-toggle" class="btn btn-secondary">다크모드</button>
             <!-- 회원정보 수정 아이콘 버튼 -->
             <a href="{{ url_for('update_profile', userid=session['user_id']) }}" class="btn btn-primary">
@@ -30,25 +30,9 @@
                 <i class="fas fa-sign-out-alt"></i> 로그아웃
             </a>
         </div>
-        {% else %}
-        <div class="team-info">
-            <img src="{{ url_for('static', filename='images/logo.png') }}" alt="팀 로고" class="logo">
-            <span class="team-name">SAFELIGHT</span>
-        </div>
-        
-        <div class="right-nav">
-            <button id="dark-mode-toggle" class="btn btn-secondary">다크모드</button>
-            <a href="{{ url_for('login') }}" class="btn btn-primary me-2">
-                <i class="fas fa-sign-in-alt"></i>
-                로그인
-            </a>
-            <a href="{{ url_for('register') }}" class="btn btn-warning" style="margin-right: 20px;">
-                <i class="fas fa-user-plus"></i>
-                회원가입
-            </a>
-        </div>
-        {% endif %}
+    {% endblock %}
     </header>
+    
     {% with messages = get_flashed_messages(with_categories=true) %}
     {% if messages %}
     <div>
@@ -96,7 +80,6 @@
             <div class="dropdown-content">
             </div>
             <div class="dropdown-content">
-                <a href="{{ url_for('need_login')}}">소개</a>
             </div>
             <div class="dropdown-content">
                 <a href="{{ url_for('need_login')}}">도로용 CCTV 보기</a>

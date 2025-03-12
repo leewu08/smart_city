@@ -134,7 +134,7 @@ def login():
         password = request.form['password']
         
         # 사용자 정보 확인
-        user = manager.get_user_by_id(id)  # DB에서 사용자 정보를 가져옴
+        user = manager.get_user_by_info(id)  # DB에서 사용자 정보를 가져옴
         admin = manager.get_admin_by_id(id) # DB에서 관리자 정보를 가져옴 
 
         if user:  # user가 None이 아닐 경우에만 진행
@@ -189,7 +189,7 @@ def user_dashboard():
 @app.route('/user_dashboard/update_profile/<userid>', methods=['GET', 'POST'])
 @login_required
 def update_profile(userid):
-    user = manager.get_user_by_id(userid)  # 회원 정보 가져오기
+    user = manager.get_user_by_info(userid)  # 회원 정보 가져오기
 
     if request.method == 'POST':
         print(userid)
@@ -316,6 +316,14 @@ def user_dashboard_sidewalk(userid):
         user = user
     )
 
+#cctv 상세보기
+@app.route('/user_dashboard/cctv/<userid>/<int:street_light_id>')
+@login_required
+def user_dashboard_cctv(userid,street_light_id):
+    user = manager.get_user_by_info(userid)
+    street_light = manager.get_streetlight_by_info(street_light_id)
+    return render_template('user_dashboard_cctv.html', user=user, street_light=street_light)
+
 ##회원페이지 문의하기
 #회원페이지에서 문의하기
 @app.route('/user_dashboard/inquiries/<userid>', methods=['GET','POST'])
@@ -344,9 +352,9 @@ def user_dashboard_inquiries(userid):
 @login_required
 def user_dashboard_inquiries_view(userid):
     if request.method == 'GET':
-        user = manager.get_user_by_id(userid)
+        user =manager.get_user_by_id(userid)
         posts = manager.get_posts_info()
-        return render_template('user_dashboard_inquiries_view.html', user=user, posts=posts)  
+        return render_template('user_dashboard_inquiries_view.html',user=user, posts=posts)  
     
     if request.method == 'POST':
         user = manager.get_user_by_id(userid)
@@ -386,9 +394,6 @@ def logout():
     # session.pop('role', None)  # 세션에서 역할 정보 제거
     session.clear()
     return redirect('/')  # 로그아웃 후 로그인 페이지로 리디렉션
-
-
-
 
 
 

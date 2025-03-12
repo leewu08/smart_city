@@ -10,6 +10,7 @@
     <thead>
         <tr>
             <th>순번</th>
+            <th>작성자</th>
             <th>문의사유</th>
             <th>자세히보기</th>
             <th>답변상태</th>
@@ -20,9 +21,11 @@
         {% for post in posts %}
         <tr>
             <td>{{ post.inquiries_id }}</td>
+            <td>{{ post.user_name }}</td>
             <td>{{ post.inquiry_reason }}</td>
             <td>
                 <a href="#" class="detail-button">상세보기</a>
+                <i class="fas fa-lock fa-1x"></i>
             </td>
             <td>
                 {% if post.answer_status == 'pending' %}
@@ -36,4 +39,5 @@
         {% endfor %}
     </tbody>
 </table>
+<script src="https://kit.fontawesome.com/your-kit-id.js" crossorigin="anonymous"></script>
 {% endblock %}
