@@ -13,6 +13,12 @@
 .search-container .total-count {
     font-weight: bold;
 }
+
+.custom-btn {
+    padding: 10px 15px; /* 버튼 내부 여백 조절 */
+    font-size: 15px; /* 글자 크기 줄이기 */
+    line-height: 1.2; /* 버튼 높이 조정 */
+}
 </style>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 {% endblock %}
@@ -26,13 +32,13 @@
     <form method="get" action="{{ url_for('user_dashboard_sidewalk', userid=user.user_id) }}">
         <label for="search_type">검색 타입:</label>
         <select name="search_type" id="search_type">
-            <option value="street_light_id" {% if search_type == 'street_light_id' %}selected{% endif %}>가로등 ID</option>
+            <option value="street_light_id" {% if search_type == 'street_light_id' %}selected{% endif %}>가로등 번호</option>
             <option value="street_light_location" {% if search_type == 'location' %}selected{% endif %}>위치</option>
             <option value="all" {% if search_type == 'all' %}selected{% endif %}>전체</option>
         </select>
         
-        <label for="search_query">가로등 ID 또는 위치:</label>
-        <input type="text" name="search_query" id="search_query" placeholder="가로등 ID 또는 위치" value="{{ search_query }}">
+        <label for="search_query">가로등 번호 또는 위치:</label>
+        <input type="text" name="search_query" id="search_query" placeholder="가로등 번호 또는 위치" value="{{ search_query }}">
         
         <button type="submit">검색</button>
     </form>
@@ -42,7 +48,7 @@
 <table>
     <thead>
         <tr>
-            <th>가로등 ID</th>
+            <th>가로등 번호</th>
             <th>위치</th>
             <th>실시간 CCTV</th>
         </tr>
@@ -53,9 +59,17 @@
                 <td>{{ street_light.street_light_id }}</td>
                 <td>{{ street_light.location }}</td>
                 {% if street_light.cctv_ip %}
-                <td><a href="{{ url_for('user_dashboard_cctv', userid=user.user_id, street_light_id = street_light.street_light_id) }}">상세 보기</a></td>
+                <td>
+                    <a href="{{ url_for('user_dashboard_cctv', userid=user.user_id, street_light_id = street_light.street_light_id) }}" class="btn btn-primary custom-btn">
+                        상세 보기
+                    </a>
+                    <i class="fa-solid fa-video fa-2x"></i> <!-- 일반적인 CCTV 아이콘 -->
+                </td>
                 {% else %}
-                <td>미설치</td>
+                <td>
+                    <a href="#" class="btn btn-secondary custom-btn">미설치</a>
+                    <i class="fa-solid fa-video-slash fa-2x" style="color:gray"></i>
+                </td>
                 {% endif %}
             </tr>
         {% else %}

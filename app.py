@@ -246,22 +246,24 @@ def user_dashboard_about(userid):
 @login_required
 def user_dashboard_road(userid):
     user = manager.get_user_by_id(userid)
-    search_query = request.args.get("search_query", "")
+    search_query = request.args.get("search_query", "").strip()
     search_type = request.args.get("search_type", "all")  # 기본값은 'all'
     page = request.args.get("page", 1, type=int)
     per_page = 10
     offset = (page - 1) * per_page
 
-    db_manager = DBManager()
+    # search_type이 'all'이면 search_query를 빈 문자열로 설정
+    if search_type == "all":
+        search_query = ""
 
     # SQL 쿼리 및 파라미터 가져오기
-    sql, values = db_manager.get_road_cctv_query(search_query, search_type, per_page, offset)
-    count_sql, count_values = db_manager.get_road_cctv_count_query(search_query, search_type)
+    sql, values = manager.get_road_cctv_query(search_query, search_type, per_page, offset)
+    count_sql, count_values = manager.get_road_cctv_count_query(search_query, search_type)
 
     # 검색된 가로등 목록 가져오기
-    street_lights = db_manager.execute_query(sql, values)
+    street_lights = manager.execute_query(sql, values)
     # 전체 CCTV 개수 카운트
-    total_posts = db_manager.execute_count_query(count_sql, count_values)
+    total_posts = manager.execute_count_query(count_sql, count_values)
 
     # 페이지네이션 계산
     total_pages = (total_posts + per_page - 1) // per_page
@@ -287,23 +289,24 @@ def user_dashboard_road(userid):
 @login_required
 def user_dashboard_sidewalk(userid):
     user = manager.get_user_by_id(userid)
-    search_query = request.args.get("search_query", "")
+    search_query = request.args.get("search_query", "").strip()
     search_type = request.args.get("search_type", "all")  # 기본값은 'all'
     page = request.args.get("page", 1, type=int)
     per_page = 10
     offset = (page - 1) * per_page
 
-    db_manager = DBManager()
-
+    
+    if search_type == "all":
+        search_query = ""
     # SQL 쿼리 및 파라미터 가져오기
-    sql, values = db_manager.get_sidewalk_cctv_query(search_query, search_type, per_page, offset)
-    count_sql, count_values = db_manager.get_sidewalk_cctv_count_query(search_query, search_type)
+    sql, values = manager.get_sidewalk_cctv_query(search_query, search_type, per_page, offset)
+    count_sql, count_values = manager.get_sidewalk_cctv_count_query(search_query, search_type)
 
     # 검색된 가로등 목록 가져오기
-    street_lights = db_manager.execute_query(sql, values)
+    street_lights = manager.execute_query(sql, values)
 
     # 전체 CCTV 개수 카운트
-    total_posts = db_manager.execute_count_query(count_sql, count_values)
+    total_posts = manager.execute_count_query(count_sql, count_values)
 
     # 페이지네이션 계산
     total_pages = (total_posts + per_page - 1) // per_page

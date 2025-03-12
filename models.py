@@ -332,7 +332,7 @@ class DBManager:
             SELECT s.*, c.cctv_ip 
             FROM street_lights s
             LEFT JOIN cameras c ON s.street_light_id = c.street_light_id
-            WHERE s.street_light_id LIKE %s AND s.purpose = "인도"
+            WHERE s.location LIKE %s AND s.purpose = "인도"
             LIMIT %s OFFSET %s
             """
             values = (f"%{search_query}%", per_page, offset)
