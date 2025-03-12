@@ -10,6 +10,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     {% block extra_css %}
     {% endblock %}
+<<<<<<< HEAD
     <header class="header">
         <button id="dark-mode-toggle" class="btn btn-secondary">다크모드</button>
         <div class="logo-container">
@@ -33,6 +34,26 @@
             </a>
             {% endif %}
         </div>
+=======
+</head>
+<body>
+    <header class="header">
+    {% block header %}
+    <button id="dark-mode-toggle" class="btn btn-secondary">다크모드</button>
+    <div class="logo-container">
+        <img src="{{ url_for('static', filename='images/logo.png') }}" alt="팀 로고" class="logo">
+    </div>
+    <div class="right-nav">
+        <span class="welcome-text">{{ user.user_name }} 님 환영합니다</span>
+        <a href="{{ url_for('update_profile', userid=session['user_id']) }}" class="btn btn-primary">
+            <i class="fas fa-user-edit"></i> 회원정보 수정
+        </a>
+        <a href="{{ url_for('logout') }}" class="btn btn-secondary">
+            <i class="fas fa-sign-out-alt"></i> 로그아웃
+        </a>
+    </div>
+    {% endblock %}
+>>>>>>> d0b7ae922c85b035b27594797f9ed6f13f228212
     </header>
     {% with messages = get_flashed_messages(with_categories=true) %}
     {% if messages %}

@@ -73,6 +73,7 @@ body {
 }
 
 .welcome-text {
+
     font-size: 13px; /* 글자 크기를 작게 설정 */
     color: #666; /* 회색으로 색상을 연하게 조정 */
     margin-right: 10px; /* 버튼과의 간격 유지 */
@@ -299,6 +300,7 @@ footer {
 .dark-mode .right-nav button:hover {
     background-color: #222;
 }
+
 
 /* 다크 모드 푸터 */
 .dark-mode footer {
