@@ -317,7 +317,7 @@ def user_dashboard_sidewalk(userid):
     )
 
 ##회원페이지 문의하기
-##회원페이지에서 문의하기
+#회원페이지에서 문의하기
 @app.route('/user_dashboard/inquiries/<userid>', methods=['GET','POST'])
 @login_required
 def user_dashboard_inquiries(userid):
@@ -339,17 +339,37 @@ def user_dashboard_inquiries(userid):
         flash("문의하기가 관리자에게 전달되었습니다.", 'success')
         return redirect(url_for('user_dashboard', user=user))
     
-##문의된 정보 보기
-@app.route('/user_dashboard/inquiries_view/<userid>')
+#문의된 정보 보기
+@app.route('/user_dashboard/inquiries_view/<userid>', methods=['GET','POST'])
 @login_required
 def user_dashboard_inquiries_view(userid):
-    user = manager.get_user_by_id(userid)
-    posts = manager.get_posts_info()
-    return render_template("user_dashboard_inquiries_view.html", user=user, posts=posts)  
-   
+    if request.method == 'GET':
+        user = manager.get_user_by_id(userid)
+        posts = manager.get_posts_info()
+        return render_template('user_dashboard_inquiries_view.html', user=user, posts=posts)  
     
+    if request.method == 'POST':
+        user = manager.get_user_by_id(userid)
+        inquiries_id = request.form.get('inquiries_id')
+        posts = manager.get_inquiry_by_id(inquiries_id)
+        return render_template('user_dashboard_inquiry_detail.html', user=user, posts=posts)
 
-
+#회원탈퇴
+@app.route('/user_dashboard/delete_user/<userid>', methods=['GET','POST'])
+@login_required
+def user_dashboard_delete_user(userid):
+    if request.method == 'GET':
+        user = manager.get_user_by_id(userid)
+        return render_template('user_dashboard_delete_page.html', user =user)
+    
+    if request.method == 'POST':
+        user = manager.get_user_by_id(userid)
+        reason = request.form['reason']
+        reason_detail = request.form['reason_detail']
+        manager.insert_deleted_user_table(userid)
+        flash("회원탈퇴가 완료되었습니다.", 'success')
+        return redirect(url_for('index'))
+    
 #탈퇴회원 로그인 후 dashboard페이지
 @app.route('/delete_user_dashboard')
 def delete_user():
@@ -367,6 +387,11 @@ def logout():
     session.clear()
     return redirect('/')  # 로그아웃 후 로그인 페이지로 리디렉션
 
+
+
+
+
+
 ### 관리자 페이지
 @app.route('/admin_dashboard')
 @admin_required  # 관리자만 접근 가능
@@ -374,33 +399,6 @@ def admin_dashboard():
     adminid = session['adminid']
     admin = manager.get_admin_by_id(adminid)
     return render_template('admin_dashboard.html', admin=admin)  # 관리자 대시보드 렌더링
-
-
-# 회원 탈퇴하기
-@app.route('/self_delete_member/<userid>', methods=['GET','POST'])
-@login_required
-def self_delete_member(userid):
-    #회원탈퇴 페이지 열기
-    if request.method == 'GET':
-        member = manager.get_member_by_id(userid)
-        return render_template('self_delete_dashboard.html', member=member, userid=userid)  #회원 탈퇴페이지 열기
-    #회원탈퇴 페이지에서 회원탈퇴버튼 눌러서 members에서 데이터 삭제 후 removed_members에 저장
-    if request.method == 'POST':
-        member = manager.get_member_by_id(userid) #로그인한 회원 정보 가져오기
-        userid = member['userid']
-        username = member['username']
-        email = member['email']
-        last_login = member['last_login'].strftime('%Y-%m-%d') if member['last_login'] else None
-        join_date = member['join_date'].strftime('%Y-%m-%d')
-        birthday = member['birthday'].strftime('%Y-%m-%d')
-        reason = request.form['reason']  # 이유를 받아서 처리
-        notes = request.form.get('notes', None)  # 추가 설명은 선택적 필드입니다.
-        #회원탈퇴 데이터 저장
-        removed_by = 'self_initiated_deletion'  # 승인 거부 사유
-        manager.add_removed_member(userid, username, email, last_login, join_date, birthday, removed_by, reason, notes)
-        manager.delete_member(userid)  # 회원 삭제
-        #승인 거부 처리 후, 대기 회원 목록 페이지로 리다이렉트
-        return render_template('complete_deletion.html', userid = userid)
 
 
 
@@ -423,13 +421,6 @@ def admin_list_posts_member():
     number = len(posts)
     return render_template("admin_list_posts_member.html", posts=posts, number=number)
 
-##비회원 문의 정보 보기
-@app.route('/admin/admin_list_posts_nonmember')
-@admin_required
-def admin_list_posts_nonmember():
-    posts = manager.get_enquired_posts_nonmember()
-    number = len(posts)
-    return render_template("admin_list_posts_nonmember.html", posts=posts, number=number)
 
 ## 답변상태 변환하기 
 @app.route('/update_status_member/<userid>', methods=['POST'])
@@ -452,91 +443,10 @@ def admin_view_posts_member(userid):
     post = manager.get_enquired_post_by_id(userid,enquired_at)
     return render_template("admin_view_posts_member.html", post=post)
 
-#비회원 문의사항 상세정보보기
-@app.route('/admin/admin_view_posts_nonmember/<userid>', methods=['POST'])
-@admin_required
-def admin_view_posts_nonmember(userid):
-    enquired_at_str = request.form['enquired_at']
-    enquired_at = datetime.strptime(enquired_at_str, '%Y-%m-%d %H:%M:%S')
-    post = manager.get_enquired_post_by_id(userid,enquired_at)
-    return render_template("admin_view_posts_nonmember.html", post=post)
 
 
-#서비스 최근 활동 내역 확인하기
-@app.route('/service_history_member/<userid>', methods=['GET'])
-@login_required
-def service_history_member(userid):
-    # DB에서 사용자의 서비스 이용 내역 조회
-    service_records = manager.get_service_usage_by_userid(userid)
-    number = len(service_records)
-    member = manager.get_member_by_id(userid)  # 사용자 정보 가져오기
-    return render_template('service_history_member.html', service_records=service_records, member=member, number=number)
 
 
-#서비스에 등록된 제품들 보여주기
-@app.route('/all_product_card/<userid>/', methods=['GET'])
-@login_required
-def all_product_card(userid):
-    member = manager.get_member_by_id(userid)
-    products = manager.get_all_products()
-    manager.update_edited_product_data(products)
-    edited_products = manager.edit_product_data()
-    number = len(edited_products)
-    edited_names = [product['edited_name'] for product in edited_products]
-    manager.update_file_name(edited_names)
-    return render_template('all_product_card.html', member=member,edited_products=edited_products,number=number)
-
-#서비스시작
-@app.route('/start_service/<userid>', methods=['GET','POST'])
-@login_required
-def start_service(userid):
-    if request.method == 'GET' :
-        member = manager.get_member_by_id(userid)
-        return render_template('start_service.html', member=member)
-    
-    if request.method == 'POST':
-        # POST로 받은 데이터 처리
-        health_status = request.form.getlist('health_status')  # 예시: 체크박스에서 받은 값들
-        functionality_choices = request.form.getlist('product_functionality')
-        member = manager.get_member_by_id(userid)
-        if member['gender'] == 'male':
-            if functionality_choices == [] :
-                functionality_choices.extend(['체지방','간','갱년기 남성','피부','눈','관절','근력','기억력','인지기능','면역기능','면역과민반응','모발','배변','수면','혈당','혈중','키성장','운동수행능력','전립선']) 
-            else:
-                functionality_choices = functionality_choices  
-        else : 
-            if functionality_choices== [] : 
-                functionality_choices.extend(['체지방','간','갱년기 여성','피부','눈','관절','근력','기억력','인지기능','면역기능','면역과민반응','모발','배변','수면','혈당','혈중','키성장','운동수행능력'])
-                functionality_choices = functionality_choices
-        # 받은 데이터로 적합한 제품들을 조회하거나 추천하는 로직을 추가
-        # 예시: get_appropriate_products 함수를 사용하여 추천 제품 목록 가져오기
-
-        # 리스트를 쉼표로 연결된 문자열로 변환
-        health_status_str = ",".join(health_status) if health_status else None
-        functionality_choices_str = ",".join(functionality_choices) if functionality_choices else None
-
-        # service_usage 테이블에 데이터 삽입
-        manager.save_service_usage(userid, member['username'], health_status_str, functionality_choices_str)
-
-
-        products = manager.get_appropriate_products(health_status, functionality_choices)
-    
-        if not products :
-            products = [] 
-        
-        number = len(products)
-        print(number)
-        
-        
-
-
-        return render_template('product_recommendations.html', products=products , member=member, number=number)
-    
-@app.route('/dashboard/health_status_check/<userid>', methods= ['GET'])
-@login_required
-def health_status_check(userid):
-    member = manager.get_member_by_id(userid)
-    return render_template('health_status_check.html', member=member)
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5010, debug=True)

@@ -14,7 +14,7 @@ class DBManager:
     def connect(self): 
         try :
             self.connection = mysql.connector.connect(
-                host = "10.0.66.4",
+                host = "10.0.66.5",
                 user = "suyong",
                 password="1234",
                 database="smart_city",
@@ -366,6 +366,22 @@ class DBManager:
         finally:
             self.disconnect()
     
+    #선택된 문의 정보 가져오기
+    def get_inquiry_by_id(self, inquiries_id):
+        try:
+            self.connect()
+            sql="""
+            SELECT * FROM inquiries where inquiries_id = %s
+            """
+            value=(inquiries_id,)
+            self.cursor.execute(sql,value)
+            return self.cursor.fetchone()
+        except Exception as error:
+            print(f"회원 문의 정보를 가져오기 실패 : {error}")
+            return False
+        finally:
+            self.disconnect()
+    
     
     # 문의 상태 업데이트 메서드(같은아이디로 반복해서 문의가 올수 있으므로 아이디,작성시간으로 구분해서 처리)
     def update_answer_status(self, userid, enquired_at):
@@ -399,12 +415,6 @@ class DBManager:
         finally:
             self.disconnect()
     
-
-    
-    
-    
-    
-
 
     #모든 데이터의 페이지 네이션
     def get_all_products(self):
