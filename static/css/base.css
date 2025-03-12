@@ -5,58 +5,108 @@
     box-sizing: border-box;
 }
 
+/* 폰트 설정 */
+@font-face {
+    font-family: "CustomFont";
+    src: url("../fonts/JalnanGothicTTF.ttf") format("truetype");
+}
+
 body {
-    font-family: Arial, sans-serif;
+    font-family: "CustomFont", sans-serif;
+    background-color: white;
+    color: black;
 }
 
 /* 헤더 스타일 */
-header {
+.header {
+    position: relative;
     display: flex;
-    justify-content: space-between; /* 왼쪽, 가운데, 오른쪽 정렬 */
+    justify-content: space-between;
     align-items: center;
     padding: 0.5rem 2rem;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    flex-wrap: wrap;
+    gap: clamp(0.5rem, 2vw, 1rem); /* 유동적 간격 */
 }
 
-/* 팀 정보 (왼쪽 정렬) */
-.team-info {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    font-size: 30px;
+.logo-container {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-75%);
+    transition: position 0.3s ease, transform 0.3s ease; /* 부드러운 전환 */
 }
 
 .logo {
-    height: 100px;
+    height: clamp(50px, 10vw, 70px); /* 화면 크기에 따라 로고 크기 조정 */
     width: auto;
+}
+
+
+
+#dark-mode-toggle {
+    background-color: #f8f9fa;
+    border: 1px solid #ddd;
+    cursor: pointer;
+    padding: 0.75rem 1.25rem;
+    border-radius: 5px;
+    color: #555;
+    flex: 0 1 auto; /* 유연한 크기 조정 */
+}
+
+.dark-mode #dark-mode-toggle {
+    background-color: #333;
+    color: #fff;
+}
+
+.right-nav {
+    display: flex;
+    align-items: center;
+    gap: clamp(0.5rem, 2vw, 1rem); /* 유동적 간격 */
+    margin-left: auto;
+    flex-wrap: wrap; /* 화면이 줄어들 때 요소들이 아래로 쌓이도록 */
 }
 
 .home-button-container {
     position: absolute;
     left: 50%;
-    transform: translateX(-50%); /* 버튼을 정확히 가운데로 위치 */
+    transform: translateX(-50%);
 }
+
+.welcome-text {
+    font-size: 13px; /* 글자 크기를 작게 설정 */
+    color: #666; /* 회색으로 색상을 연하게 조정 */
+    margin-right: 10px; /* 버튼과의 간격 유지 */
+    min-width: 150px; /* 이 너비에 닿으면 아래로 이동 */
+    white-space: nowrap; /* 텍스트가 줄바꿈되지 않도록 */
+    flex: 0 1 auto; /* 유연한 크기 조정 */
+}
+
 /* 내비게이션 스타일 */
 .header-nav {
     display: flex;
-    justify-content: center; /* 내비게이션을 가로로 중앙 정렬 */
+    justify-content: center;
     padding: 0.5rem;
     position: relative;
-    width: 100%; /* 필요한 만큼 넓게 설정 */
+    width: 100%;
 }
 
-/* 내비게이션 메뉴 중앙 정렬 */
+.btn {
+    padding: 0.5em 1em;
+    font-size: 1em;
+}
+
+/* 내비게이션 메뉴 */
 .nav-menu {
     display: flex;
     justify-content: center;
     align-items: center;
-    gap: 7rem; /* 원하는 간격 유지 */
-    flex-shrink: 0; /* 항목들이 줄어들지 않도록 설정 */
+    gap: clamp(1rem, 7vw, 7rem); /* 화면 크기에 따라 간격 조정 */
+    flex-shrink: 0;
+    flex-wrap: wrap;
 }
 
-/* 내비게이션 링크 스타일 */
 .nav-link {
-    padding: 10px 15px;
+    padding: clamp(5px, 1.5vw, 15px) clamp(10px, 2vw, 15px); /* 유동적 패딩 */
     color: #333;
     text-decoration: none;
     font-weight: 500;
@@ -85,17 +135,15 @@ header {
     transition: opacity 0.3s ease, transform 0.3s ease;
     z-index: 10;
     border-bottom: 1px solid #ddd;
-    text-align: center; /* 텍스트 가운데 정렬 추가 */
+    text-align: center;
 }
 
-/* 호버 시 드롭다운 표시 */
 .header-nav:hover .dropdown-container {
     opacity: 1;
     visibility: visible;
     transform: translateY(0);
 }
 
-/* 드롭다운 콘텐츠 스타일 */
 .dropdown-content {
     min-width: 160px;
 }
@@ -106,7 +154,7 @@ header {
     text-decoration: none;
     display: block;
     transition: background-color 0.2s;
-    margin-right:5px;
+    margin-right: 5px;
 }
 
 .dropdown-content a:hover {
@@ -114,15 +162,7 @@ header {
     color: #007bff;
 }
 
-/* 오른쪽 내비게이션 */
-.right-nav {
-    display: flex;
-    align-items: center; /* 버튼들을 세로 중앙 정렬 */
-    gap: 1rem; /* 기본 간격 설정 */
-    margin-left: auto; /* 오른쪽 정렬 유지 */
-}
-
-/* 버튼 스타일 */
+/* 오른쪽 내비게이션 버튼 스타일 */
 .right-nav button,
 .right-nav a {
     padding: 0.75rem 1.25rem;
@@ -130,10 +170,10 @@ header {
     text-decoration: none;
     transition: background-color 0.2s;
     font-size: 1rem;
-    margin-right: 1rem; /* 모든 버튼에 오른쪽 마진 추가 */
+    margin-right: 1rem;
+    flex: 0 1 auto; /* 유연한 크기 조정 */
 }
 
-/* 마지막 버튼의 오른쪽 마진 제거 */
 .right-nav a:last-child {
     margin-right: 0;
 }
@@ -148,7 +188,6 @@ header {
     background-color: #e9ecef;
 }
 
-
 /* 컨텐츠 영역 */
 .content-area {
     width: 100%;
@@ -159,11 +198,16 @@ header {
 
 /* 푸터 스타일 */
 footer {
+    
     display: flex;
     justify-content: space-between;
     padding: 20px;
-    border-top: 1px solid white;
+    text-align: center ;
+    font-size: 14px ;
+    color: #333 
 }
+
+
 
 /* 슬라이더 관련 스타일 */
 .swiper-container {
@@ -188,7 +232,6 @@ footer {
     object-fit: cover;
 }
 
-/* Swiper 네비게이션 버튼 스타일 */
 .swiper-button-next,
 .swiper-button-prev {
     color: #fff;
@@ -202,7 +245,6 @@ footer {
     font-size: 20px;
 }
 
-/* Swiper 페이지네이션 스타일 */
 .swiper-pagination-bullet {
     width: 10px;
     height: 10px;
@@ -215,25 +257,17 @@ footer {
     background-color: #fff;
 }
 
-/* 기본 테마 (라이트 모드) */
-body {
-    background-color: white;
-    color: black;
-}
-
-/* 다크모드 */
+/* 다크 모드 */
 .dark-mode {
     background-color: #121212;
     color: white;
 }
 
-/* 다크모드 - 버튼 스타일 변경 */
 .dark-mode .btn-warning {
     background-color: #ffcc00;
     color: black;
 }
 
-/* 다크모드 - 헤더 내비게이션 스타일 */
 .dark-mode .nav-link {
     color: white;
 }
@@ -242,7 +276,6 @@ body {
     color: #ffcc00;
 }
 
-/* 다크모드 - 드롭다운 메뉴 색상 */
 .dark-mode .dropdown-container {
     background-color: #333;
     border-bottom: 1px solid #555;
@@ -257,35 +290,31 @@ body {
     color: #ffcc00;
 }
 
-/* 다크모드 - 헤더 버튼 스타일 */
 .dark-mode .right-nav button {
-    background-color: #333;
+    background-color: #222;
     color: white;
     border: 1px solid #555;
 }
 
 .dark-mode .right-nav button:hover {
-    background-color: #444;
+    background-color: #222;
 }
 
-#dark-mode-toggle {
-    color: #555; /* 텍스트 색상을 하얀색으로 변경 */
+/* 다크 모드 푸터 */
+.dark-mode footer {
+    background-color: #111; /* 다크 모드 배경 색상 */
+    color: white; /* 텍스트 색상 흰색 */
 }
 
-.dark-mode #dark-mode-toggle {
-    color: #fff; /* 다크모드일 때만 텍스트 색상을 하얀색으로 변경 */
+.dark-mode footer a {
+    color: white; /* 푸터 내 링크 색상 */
 }
 
-@font-face {
-    font-family: "CustomFont";
-    src: url("../fonts/JalnanGothicTTF.ttf") format("truetype");
+.dark-mode footer a:hover {
+    color: #007bff; /* 링크 hover 상태 색상 */
 }
 
-body {
-    font-family: "CustomFont", sans-serif;
-}
-
-/* 기본적인 플래시 메시지 스타일 */
+/* 플래시 메시지 */
 .flash-message {
     position: fixed;
     top: 20px;
@@ -300,29 +329,100 @@ body {
     box-shadow: 0 4px 6px rgba(81, 139, 14, 0.1);
     opacity: 0;
     transition: opacity 0.5s ease-in-out;
-    text-align:center;
+    text-align: center;
 }
 
-
-/* .show 클래스를 추가하면 보이도록 */
 .flash-message.show {
-    display: block;
-    opacity: 1; /* 보이도록 설정 */
+    opacity: 1;
 }
 
-/* 예시: 성공 메시지 스타일 */
 .flash-message.success {
     background-color: green;
     color: white;
 }
 
-/* 예시: 오류 메시지 스타일 */
 .flash-message.error {
     background-color: red;
     color: white;
 }
 
-.flash-massage.warning{
-    background-color: Orange;
-    color : white
+.flash-message.warning {
+    background-color: #FF9800;
+    color: white;
+}
+
+/* 미디어 쿼리 (768px 이하) */
+@media (max-width: 768px) {
+    .header {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .logo-container {
+        position: static;
+        transform: none;
+        margin-bottom: 10px;
+    }
+
+    .logo {
+        height: 50px; /* 작은 화면에서 고정 크기 */
+    }
+
+    .right-nav {
+        flex-direction: column;
+        align-items: center;
+        width: 100%;
+        gap: 0.5rem;
+    }
+
+    #dark-mode-toggle,
+    .right-nav a,
+    .right-nav button {
+        width: 100%;
+        margin-bottom: 5px;
+        text-align: center;
+    }
+
+    .header-nav {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .nav-menu {
+        flex-direction: column;
+        align-items: center;
+        width: 100%;
+        gap: 1rem;
+    }
+
+    .nav-link {
+        width: 100%;
+        text-align: center;
+        padding: 10px;
+    }
+
+    .dropdown-container {
+        position: static;
+        width: 100%;
+        box-shadow: none;
+        padding: 10px;
+        opacity: 1;
+        visibility: visible;
+        transform: none;
+        display: block; /* 작은 화면에서 항상 보이게 */
+    }
+
+    .dropdown-content {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        width: 100%;
+    }
+
+    .dropdown-content a {
+        width: 100%;
+        text-align: center;
+        padding: 10px;
+        border-bottom: 1px solid #ddd;
+    }
 }

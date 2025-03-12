@@ -95,7 +95,7 @@ document.addEventListener('DOMContentLoaded', function() {
         
         setTimeout(function() {
             message.classList.remove('show');
-        }, 3000); // 3초 후 메시지 사라짐
+        }, 3000); // 3초 후 메시지 사라
+        // 짐
     });
 });
-   
