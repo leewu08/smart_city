@@ -86,3 +86,39 @@
     text-decoration: underline;
 }
 
+/* 플래시 메시지 */
+.flash-message {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 15px 25px;
+    border-radius: 5px;
+    font-size: 16px;
+    z-index: 1000;
+    width: 450px;
+    height: 70px;
+    box-shadow: 0 4px 6px rgba(81, 139, 14, 0.1);
+    opacity: 0;
+    transition: opacity 0.5s ease-in-out;
+    text-align: center;
+}
+
+.flash-message.show {
+    opacity: 1;
+}
+
+.flash-message.success {
+    background-color: green;
+    color: white;
+}
+
+.flash-message.error {
+    background-color: red;
+    color: white;
+}
+
+.flash-message.warning {
+    background-color: #FF9800;
+    color: white;
+}

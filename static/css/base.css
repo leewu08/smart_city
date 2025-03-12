@@ -73,7 +73,8 @@ body {
 }
 
 .welcome-text {
-    font-size: 14px; /* 글자 크기를 작게 설정 */
+
+    font-size: 13px; /* 글자 크기를 작게 설정 */
     color: #666; /* 회색으로 색상을 연하게 조정 */
     margin-right: 10px; /* 버튼과의 간격 유지 */
     min-width: 150px; /* 이 너비에 닿으면 아래로 이동 */
@@ -198,11 +199,16 @@ body {
 
 /* 푸터 스타일 */
 footer {
+    
     display: flex;
     justify-content: space-between;
     padding: 20px;
-    border-top: 1px solid white;
+    text-align: center ;
+    font-size: 14px ;
+    color: #333 
 }
+
+
 
 /* 슬라이더 관련 스타일 */
 .swiper-container {
@@ -286,13 +292,28 @@ footer {
 }
 
 .dark-mode .right-nav button {
-    background-color: #333;
+    background-color: #222;
     color: white;
     border: 1px solid #555;
 }
 
 .dark-mode .right-nav button:hover {
-    background-color: #444;
+    background-color: #222;
+}
+
+
+/* 다크 모드 푸터 */
+.dark-mode footer {
+    background-color: #111; /* 다크 모드 배경 색상 */
+    color: white; /* 텍스트 색상 흰색 */
+}
+
+.dark-mode footer a {
+    color: white; /* 푸터 내 링크 색상 */
+}
+
+.dark-mode footer a:hover {
+    color: #007bff; /* 링크 hover 상태 색상 */
 }
 
 /* 플래시 메시지 */

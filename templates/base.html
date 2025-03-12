@@ -10,7 +10,6 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     {% block extra_css %}
     {% endblock %}
-   
 </head>
 <body>
     <header class="header">
@@ -101,9 +100,21 @@
             <p>프로젝트 팀장: 신준혁</p>
             <p>프로젝트 팀원: 황수용, 이지엽, 손유빈</p>
         </div>
-        <div class="footer-right" id="current-date"></div>
+        
+        <div class="footer-right">
+            <div id="current-date"></div>  <!-- 날짜 표시 -->
+            
+            {% if 'user_id' in session %}
+            <div class="delete-section">
+                <form action="{{ url_for('user_dashboard_delete_user', userid=session['user_id']) }}" method="get">
+                    <button type="submit" class="delete-btn btn btn-danger">회원 탈퇴</button>
+                </form>
+            </div>
+            {% endif %}
+        </div>
     </footer>
     {% endblock %}
+    
 
     <script src="https://cdn.jsdelivr.net/npm/swiper/swiper-bundle.min.js"></script>
     <script src="{{ url_for('static', filename='js/slider.js') }}"></script>

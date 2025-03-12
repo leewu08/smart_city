@@ -1,0 +1,93 @@
+/* static/css/delete_page.css */
+
+body {
+    background-color: #f9f9f9;
+    margin: 0;
+    padding: 0;
+    font-size: 15px; /
+}
+
+.container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 80vh; /* 화면 크기에 맞게 높이 조정 */
+    padding: 20px;
+}
+
+h2 {
+    color: #dc3545;
+    font-size: 24px; /* 제목 크기 줄이기 */
+    font-weight: 600;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.delete-form {
+    background-color: #fff;
+    padding: 20px; /* 폼 내부 여백 줄이기 */
+    border-radius: 10px;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    max-width: 350px; /* 폼 최대 크기 줄이기 */
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+form label {
+    font-size: 14px; /* 레이블 크기 줄이기 */
+    font-weight: 500;
+    color: #333;
+    margin-bottom: 6px;
+}
+
+form select,
+form textarea {
+    width: 100%;
+    padding: 8px; /* 입력 필드 크기 줄이기 */
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 14px;
+    color: #333;
+    margin-bottom: 15px;
+    transition: border-color 0.3s ease;
+}
+
+form select:focus,
+form textarea:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 8px rgba(0, 123, 255, 0.2);
+    outline: none;
+}
+
+form button.delete-btn {
+    background-color: #dc3545;
+    color: white;
+    border: none;
+    padding: 12px;
+    font-size: 14px; /* 버튼 폰트 크기 줄이기 */
+    font-weight: 500;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+form button.delete-btn:hover {
+    background-color: #c82333;
+}
+
+a.cancel-btn {
+    display: inline-block;
+    text-align: center;
+    text-decoration: none;
+    color: #007bff;
+    font-size: 14px; /* 취소 버튼 크기 줄이기 */
+    margin-top: 10px;
+}
+
+a.cancel-btn:hover {
+    text-decoration: underline;
+}
+
