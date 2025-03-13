@@ -130,7 +130,50 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 });
 
+function openAddressSearch() {
+    new daum.Postcode({
+        oncomplete: function(data) {
+            var fullAddress = data.address;
+            var extraAddress = ''; // 추가 주소
 
+            // 우편번호와 주소 선택 시 추가 주소 처리
+            if (data.addressType === 'R') {
+                if (data.bname !== '') {
+                    extraAddress += data.bname; 
+                }
+                if (data.buildingName !== '') {
+                    extraAddress += (extraAddress !== '' ? ', ' + data.buildingName : data.buildingName); 
+                }
+                fullAddress += extraAddress !== '' ? ' (' + extraAddress + ')' : '';
+            }
 
+            // 주소를 입력 필드에 삽입
+            document.getElementById('address').value = fullAddress;
+        }
+    }).open();
+}
 
+// 주소 검색 팝업 띄우기
+function openAddressSearch() {
+    new daum.Postcode({
+        oncomplete: function(data) {
+            var fullAddress = data.address;
+            var extraAddress = ''; // 추가 주소
+
+            // 우편번호와 주소 선택 시 추가 주소 처리
+            if (data.addressType === 'R') {
+                if (data.bname !== '') {
+                    extraAddress += data.bname; 
+                }
+                if (data.buildingName !== '') {
+                    extraAddress += (extraAddress !== '' ? ', ' + data.buildingName : data.buildingName); 
+                }
+                fullAddress += extraAddress !== '' ? ' (' + extraAddress + ')' : '';
+            }
+
+            // 주소를 입력 필드에 삽입
+            document.getElementById('address').value = fullAddress;
+        }
+    }).open();
+}
 

@@ -1,4 +1,31 @@
-/* static/css/register.css */
+:root {
+    --background-color: #ffffff;
+    --text-color: #4a5568;
+    --input-border-color: #e2e8f0;
+    --input-focus-border-color: #4299e1;
+    --button-bg-color: #4299e1;
+    --button-hover-bg-color: #3182ce;
+    --link-color: #4299e1;
+    --secondary-text-color: #718096;
+    --card-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.dark-mode {
+    --background-color: #333;
+    --text-color: #f8f9fa;
+    --input-border-color: #555;
+    --input-focus-border-color: #3a7bd5;
+    --button-bg-color: #3a7bd5;
+    --button-hover-bg-color: #2b6cb0;
+    --link-color: #4da3ff;
+    --secondary-text-color: #a0aec0;
+    --card-shadow: 0 4px 6px rgba(255, 255, 255, 0.1);
+}
+
+body {
+    background-color: var(--background-color);
+    color: var(--text-color);
+}
 
 .update-form-container {
     display: flex;
@@ -9,16 +36,16 @@
 }
 
 .update-card {
-    background-color: #ffffff;
+    background-color: var(--background-color);
     border-radius: 8px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    box-shadow: var(--card-shadow);
     padding: 40px;
     width: 100%;
     max-width: 400px;
 }
 
 .update-card h2 {
-    color: #4a5568;
+    color: var(--text-color);
     font-size: 24px;
     font-weight: 600;
     margin-bottom: 24px;
@@ -27,7 +54,7 @@
 
 .update-card .form-label {
     font-weight: 500;
-    color: #4a5568;
+    color: var(--text-color);
     margin-bottom: 6px;
     display: block;
 }
@@ -35,20 +62,22 @@
 .update-card .form-control {
     width: 100%;
     padding: 10px;
-    border: 1px solid #e2e8f0;
+    border: 1px solid var(--input-border-color);
     border-radius: 4px;
     margin-bottom: 16px;
     font-size: 14px;
+    background-color: var(--background-color);
+    color: var(--text-color);
 }
 
 .update-card .form-control:focus {
     outline: none;
-    border-color: #4299e1;
+    border-color: var(--input-focus-border-color);
     box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.1);
 }
 
 .update-card .btn-primary {
-    background-color: #4299e1;
+    background-color: var(--button-bg-color);
     color: #ffffff;
     border: none;
     padding: 12px;
@@ -61,17 +90,17 @@
 }
 
 .update-card .btn-primary:hover {
-    background-color: #3182ce;
+    background-color: var(--button-hover-bg-color);
 }
 
 .update-card .form-check-label {
     font-size: 14px;
-    color: #718096;
+    color: var(--secondary-text-color);
 }
 
 .update-card .terms_of_service,
 .update-card .privacy_policy {
-    color: #4299e1;
+    color: var(--link-color);
     text-decoration: none;
 }
 
@@ -81,7 +110,7 @@
 }
 
 .update-card .text_login {
-    color: #718096;
+    color: var(--secondary-text-color);
     text-decoration: none;
     font-size: 14px;
     display: block;
@@ -90,7 +119,7 @@
 }
 
 .update-card .text_login:hover {
-    color: #4299e1;
+    color: var(--link-color);
 }
 
 .update-card .reg-number-container {

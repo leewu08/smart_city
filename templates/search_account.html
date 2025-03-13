@@ -14,22 +14,25 @@
 <body>
     <div class="container">
         <h2>아이디 / 비밀번호 찾기</h2>
+        <br>
         <form id="searchForm" action="{{ url_for('search_account') }}" method="POST">
             <label><input type="radio" name="search_type" value="id" checked> 아이디 찾기</label>
             <label><input type="radio" name="search_type" value="password"> 비밀번호 찾기</label>
-            
+           
             <div id="commonFields">
+                <br>
                 <label>이름</label>
                 <br>
                 <input type="text" name="username" required>
                 <br>
-
+                <br>
                 <label>주민등록번호:</label>
                 <br>
-                <input type="text" name="regnumber" required>
+                <input type="text" name="regnumber" id="regnumber" maxlength="14" required oninput="formatRegNumber(this)">
             </div>
 
             <div id="passwordFields" style="display: none;">
+                <br>
                 <label>아이디:</label>
                 <br>
                 <input type="text" name="userid">
@@ -38,14 +41,15 @@
             <button type="submit" class="btn btn-secondary">찾기</button>
         </form>
     </div>
-    {% if userid %}
-    <div class="reuslt">
-        회원님의 아이디는 {{ userid.user_id }} 입니다.
-    </div>
-    {% elif password %}
+    {% if search_type == 'password' %}
     <div class="reuslt">
         <p>회원님의 비밀번호는 {{ password }} 입니다.</p>
-        <a href="#">비밀번호를 바꾸시려면 여기를 눌러주세요</a>
+        <a href="{{ url_for('edit_password', userid=userid )}}">비밀번호를 바꾸시려면 여기를 눌러주세요</a>
+    </div>
+    {% endif %}
+    {% if search_type == 'id' %}
+    <div class="reuslt">
+        회원님의 아이디는 {{ userid.user_id }} 입니다.
     </div>
     {% endif %}
     <script>
@@ -60,6 +64,16 @@
 
     // 페이지 로드 시 기본 설정 적용
     toggleFields();
+
+    
+    function formatRegNumber(input) {
+    let value = input.value.replace(/[^0-9]/g, ''); // 숫자만 입력 가능하도록 필터링
+        if (value.length > 6) {
+            input.value = value.slice(0, 6) + '-' + value.slice(6, 13); // 6자리 입력 후 '-' 추가
+        } else {
+            input.value = value;
+        }
+    }
     </script>
 </body>
 </html>

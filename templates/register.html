@@ -7,22 +7,18 @@
 {% endblock %}
 
 {% block header %}
-<div class="team-info">
-    <img src="{{ url_for('static', filename='images/logo.png') }}" alt="팀 로고" class="logo">
-    <span class="team-name">SAFELIGHT</span>
-</div>
-
-<div class="right-nav">
-    <button id="dark-mode-toggle" class="btn btn-secondary">다크모드</button>
-    <a href="{{ url_for('login') }}" class="btn btn-primary me-2">
-        <i class="fas fa-sign-in-alt"></i>
-        로그인
-    </a>
-    <a href="{{ url_for('register') }}" class="btn btn-warning" style="margin-right: 20px;">
-        <i class="fas fa-user-plus"></i>
-        회원가입
-    </a>
-</div>
+<button id="dark-mode-toggle" class="btn btn-secondary">다크모드</button>
+    <div class="logo-container">
+        <img src="{{ url_for('static', filename='images/logo.png') }}" alt="팀 로고" class="logo">
+    </div>
+    <div class="right-nav">
+        <a href="{{ url_for('login') }}" class="btn btn-primary me-2">
+            <i class="fas fa-sign-in-alt"></i> 로그인
+        </a>
+        <a href="{{ url_for('register') }}" class="btn btn-warning" style="margin-right: 20px;">
+            <i class="fas fa-user-plus"></i> 회원가입
+        </a>
+    </div>
 {% endblock %}
 
 {% block content %}
@@ -103,33 +99,6 @@
 <!-- 카카오 주소 검색 API 로드 -->
 <script src="https://ssl.daumcdn.net/dmaps/map_js_init/postcode.v2.js"></script>
 <script src="{{ url_for('static', filename='js/register.js') }}"></script>
-
-<script>
-    // 주소 검색 팝업 띄우기
-    function openAddressSearch() {
-        new daum.Postcode({
-            oncomplete: function(data) {
-                var fullAddress = data.address;
-                var extraAddress = ''; // 추가 주소
-
-                // 우편번호와 주소 선택 시 추가 주소 처리
-                if (data.addressType === 'R') {
-                    if (data.bname !== '') {
-                        extraAddress += data.bname; 
-                    }
-                    if (data.buildingName !== '') {
-                        extraAddress += (extraAddress !== '' ? ', ' + data.buildingName : data.buildingName); 
-                    }
-                    fullAddress += extraAddress !== '' ? ' (' + extraAddress + ')' : '';
-                }
-
-                // 주소를 입력 필드에 삽입
-                document.getElementById('address').value = fullAddress;
-            }
-        }).open();
-    }
-</script>
-
 {% endblock %}
 {% endblock %}
 
