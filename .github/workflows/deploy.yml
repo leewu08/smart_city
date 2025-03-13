@@ -1,26 +1,13 @@
-name: Deploy to Server
-
-on:
-  push:
-    branches:
-      - main
-
 jobs:
   deploy:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted  # 웹 서버에서 직접 실행
 
     steps:
-      - name: Deploy to server
-        uses: appleboy/ssh-action@v0.1.8
-        with:
-          host: ${{ secrets.SERVER_HOST }}
-          username: ${{ secrets.SERVER_USERNAME }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          port: 22
-          timeout: 60s
-          command_timeout: 300s
-          debug: true
-          script: |
-            cd /home/sejong/flask_app/smart_city
-            git pull origin main
-            echo "${{ secrets.SUDO_PASSWORD }}" | sudo -S systemctl restart gunicorn_app
+      - name: Checkout Repository
+        uses: actions/checkout@v3  # 저장소 코드를 서버로 가져옴
+
+      - name: Deploy to Local Server
+        run: |
+          cd /home/sejong/flask_app/smart_city
+          git pull origin main
+          echo "${{ secrets.SUDO_PASSWORD }}" | sudo -S systemctl restart gunicorn_app
