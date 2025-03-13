@@ -229,7 +229,7 @@ def update_profile(userid):
             # 비밀번호 업데이트
             else:
                 flash('비밀번호를 변경하였습니다', 'success')
-                manager.update_password(userid, password)
+                manager.update_user_password(userid, password)
         # 나머지 정보 업데이트
         manager.update_user_info(userid, username, email, address)
 
@@ -397,6 +397,7 @@ def user_dashboard_delete_user(userid):
     
 #탈퇴회원 로그인 후 dashboard페이지
 @app.route('/delete_user_dashboard')
+@login_required
 def delete_user():
     return render_template('delete_user_dashboard.html')
 
@@ -407,19 +408,34 @@ def search_account():
         search_type = request.form.get('search_type')
         username = request.form.get('username')
         regnumber = request.form.get('regnumber')
+        userid = None  # 기본값 설정
 
         if search_type == "id":
-            userid = manager.get_user_by_name_regnumber(username, regnumber)
-            return render_template('search_account.html', userid=userid )
+            userid = manager.get_user_id_by_name_regnumber(username, regnumber)
+            print(userid)
+            return render_template('search_account.html', userid=userid, search_type=search_type )
 
         elif search_type == "password":
             userid = request.form.get('userid')
-            password_data = manager.get_user_by_id_name_regnumber(userid, username, regnumber)
+            password_data = manager.get_user_password_by_id_name_regnumber(userid, username, regnumber)
+            password = None  # 기본값 설정
+
             if password_data: 
                 raw_password = password_data['password']  # 딕셔너리에서 비밀번호 값 가져오기
                 password = raw_password[:4] + '*' * (len(raw_password) - 4)  # 앞 4자리만 표시, 나머지는 '*'
-            return render_template('search_account.html', password = password)
+            return render_template('search_account.html', password = password, userid=userid, search_type=search_type)
     return render_template('search_account.html')
+
+#계정찾기 이후 새비밀번호 업데이트
+@app.route('/index/search_account/edit_password/<userid>', methods=['GET','POST'])
+def edit_password(userid):
+    user = manager.get_user_by_info(userid)
+    if request.method == 'POST': 
+       password = request.form['new_password']
+       success = manager.update_user_password(userid, password)
+       return jsonify({"success": success})
+    return render_template('edit_password.html', user = user)
+    
 
 ## 로그아웃 라우트
 @app.route('/logout')
@@ -482,7 +498,10 @@ def admin_view_posts_member(userid):
     post = manager.get_enquired_post_by_id(userid,enquired_at)
     return render_template("admin_view_posts_member.html", post=post)
 
-
+#이미지파일 가져오기
+@app.route('/capture_file/<filename>')
+def capture_file(filename):
+    return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
 
 
 

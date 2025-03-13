@@ -159,7 +159,7 @@ class DBManager:
             self.disconnect()
     
     # 회원 비밀번호 변경
-    def update_password(self, id, password):
+    def update_user_password(self, id, password):
         try:
             self.connect()  # DB 연결
             sql= """
@@ -250,7 +250,7 @@ class DBManager:
 
     
     # 비밀번호조회(계정 찾기)
-    def get_user_by_id_name_regnumber(self, userid, username, regnumber):
+    def get_user_password_by_id_name_regnumber(self, userid, username, regnumber):
         try:
             self.connect()
             sql = 'SELECT password FROM users WHERE user_id = %s and user_name = %s and reg_number = %s'
@@ -265,7 +265,7 @@ class DBManager:
             self.disconnect()
     
     # 아이디 조회(계정 찾기)
-    def get_user_by_name_regnumber(self,username,regnumber):
+    def get_user_id_by_name_regnumber(self,username,regnumber):
         try:
             self.connect()
             sql = 'SELECT user_id FROM users WHERE user_name= %s and reg_number = %s'
