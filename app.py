@@ -378,6 +378,7 @@ def user_dashboard_inquiries_view(userid):
         posts = manager.get_inquiry_by_info(inquiries_id)
         return render_template('user_dashboard_inquiry_detail.html', user=user, posts=posts)
 
+
 #회원탈퇴
 @app.route('/user_dashboard/delete_user/<userid>', methods=['GET','POST'])
 @login_required
