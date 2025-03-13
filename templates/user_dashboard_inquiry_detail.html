@@ -1,2 +1,52 @@
 {% extends "base.html" %}
-{% block title %}문의보기-상세보기{% endblock %}
+{% block title %}문의 상세보기 페이지{% endblock %}
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/user_dashboard_inquiries_detail.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="inquiry-wrapper">
+    <div class="inquiry-detail-container">
+        <!-- 상단 영역 -->
+        <div class="page-header">
+            <!-- 왼쪽 구석: 문의자 / 문의시간 -->
+            <div class="left-info">
+                <p class="user-name">문의자: {{ user.user_name }}</p>
+                <p class="inquiry-time">문의시간: {{ posts.inquiry_time }}</p>
+            </div>
+            <!-- 중앙: 문의 상세보기 -->
+            <h2>문의 상세보기</h2>
+        </div>
+
+        <!-- 본문 영역 -->
+        <div class="inquiry-body">
+            <!-- 문의 제목 -->
+            <div class="inquiry-title">
+                <h3>문의 제목</h3>
+                <p>{{ posts.inquiry_reason }}</p>
+            </div>
+
+            <!-- 문의 내용 -->
+            <div class="inquiry-content">
+                <h4>문의 내용</h4>
+                <p class="detail-reason">{{ posts.detail_reason }}</p>
+            </div>
+
+            <!-- 첨부파일 -->
+            <div class="attachment-section">
+                <h4>첨부파일</h4>
+                {% if posts.capture_file %}
+                    <img src="{{ url_for('capture_file', filename=posts.capture_file) }}" alt="첨부 이미지" style="max-width: auto; height: auto;">
+                {% else %}
+                    <span>없음</span>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- 하단: 뒤로가기 버튼 -->
+        <div class="inquiry-footer">
+            <a href="{{ url_for('user_dashboard_inquiries_view', userid=user.user_id) }}" class="back-button">뒤로 가기</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -99,3 +99,12 @@ document.addEventListener('DOMContentLoaded', function() {
         // 짐
     });
 });
+
+document.addEventListener("DOMContentLoaded", function () {
+    if (window.location.pathname.startsWith("/user_dashboard/delete_user")) {
+        let deleteSection = document.querySelector(".delete-section");
+        if (deleteSection) {
+            deleteSection.style.display = "none"; // 탈퇴 버튼 숨기기
+        }
+    }
+});

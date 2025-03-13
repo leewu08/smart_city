@@ -370,7 +370,13 @@ def user_dashboard_inquiries_view(userid):
         user = manager.get_user_by_id(userid)
         inquiries_id = request.form.get('inquiries_id')
         posts = manager.get_inquiry_by_id(inquiries_id)
+        print('inquiries_id')
         return render_template('user_dashboard_inquiry_detail.html', user=user, posts=posts)
+
+# 파일 보기 
+@app.route('/capture_file/<filename>')
+def capture_file(filename):
+    return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
 
 #회원탈퇴
 @app.route('/user_dashboard/delete_user/<userid>', methods=['GET','POST'])
@@ -457,11 +463,6 @@ def admin_view_posts_member(userid):
     enquired_at = datetime.strptime(enquired_at_str, '%Y-%m-%d %H:%M:%S')
     post = manager.get_enquired_post_by_id(userid,enquired_at)
     return render_template("admin_view_posts_member.html", post=post)
-
-
-
-
-
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5010, debug=True)

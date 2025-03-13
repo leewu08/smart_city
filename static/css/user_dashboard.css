@@ -3,24 +3,20 @@ html, body {
     margin: 0;
     padding: 0;
     line-height: 1.6;
-    background-color: var(--background-color, #f4f4f4);
-    color: var(--text-color, #000);
+    background-color: var(--background-color);
+    color: var(--text-color);
 }
 
 /* 다크모드와 라이트모드 색상 변수 */
 :root {
     --background-color: #f4f4f4;
     --text-color: #000;
-
     --primary-color: #28a745;
     --secondary-color: #fff;
-
     --table-header-bg: #fff;
     --table-row-hover-bg: #f5f5f5;
     --input-border-color: #ddd;
     --button-text-color: #fff;
-
-    /* 헤더 및 네비게이션 전용 변수 */
     --header-bg: #fff;
     --header-text-color: #333;
 }
@@ -28,17 +24,13 @@ html, body {
 .dark-mode {
     --background-color: #121212;
     --text-color: #fff;
-
     --primary-color: #28a745;
     --secondary-color: #333;
-
-    --table-header-bg: #444;
-    --table-row-hover-bg: #333;
-    --input-border-color: #555;
-
-    /* 헤더 및 네비게이션 전용 변수 (다크모드용) */
-    --header-bg: #222;         /* 헤더/네비 배경을 어두운 색으로 */
-    --header-text-color: #f1f1f1; /* 헤더/네비 텍스트를 밝게 */
+    --table-header-bg: #222;
+    --table-row-hover-bg: #222;
+    --input-border-color: #222;
+    --header-bg: #222;
+    --header-text-color: #f1f1f1;
 }
 
 /* 헤더 영역 스타일 */
@@ -134,70 +126,59 @@ button:hover {
 
 /* 테이블 크기 조정 및 중앙 정렬 */
 .table-container {
-    max-width: 800px; /* 화면을 꽉 채우지 않도록 크기 조정 */
-    margin: 0 auto; /* 중앙 정렬 */
+    max-width: 800px;
+    margin: 0 auto;
 }
 
 /* 테이블 스타일 */
 table {
     width: 70%;
-    border-collapse: collapse; /* 테두리 겹침 제거 */
-    border: 2px solid #444; /* 굵은 테두리 추가 */
+    border-collapse: collapse;
+    border: 2px solid var(--text-color);
     margin: 0 auto;
+    background-color: var(--secondary-color);
+    color: var(--text-color);
 }
 
 /* 테이블 헤더 스타일 */
 thead th {
-    text-align: center; /* 헤더 중앙 정렬 */
-    background-color: #f8f9fa;
+    text-align: center;
+    background-color: var(--table-header-bg);
     padding: 10px;
-    border: 0.3px solid #444; 
+    border: 0.3px solid var(--text-color);
     font-weight: bold;
+    color: var(--text-color);
 }
 
 /* 테이블 셀 스타일 */
 td {
     padding: 8px;
-    border: 0.3px solid #444; 
+    border: 0.3px solid var(--text-color);
 }
 
 /* 각 열의 너비 조정 */
-td:first-child, th:first-child { /* 가로등 ID */
+td:first-child, th:first-child {
     width: 10%;
     text-align: center;
 }
 
-td:nth-child(2) { /* 위치 (주소 값) */
+td:nth-child(2) {
     width: 65%;
-    text-align: left; /* 주소 값 왼쪽 정렬 */
+    text-align: left;
 }
 
-th:nth-child(2) { /* 위치 (헤더) */
-    text-align: center; /* 헤더 중앙 정렬 */
+th:nth-child(2) {
+    text-align: center;
 }
 
-td:last-child, th:last-child { /* 실시간 CCTV */
+td:last-child, th:last-child {
     width: 25%;
     text-align: center;
 }
 
-/* 상세보기 버튼 스타일 */
-/* td:last-child a {
-    display: inline-block;
-    padding: 4px 8px;
-    font-size: 12px;
-    text-decoration: none;
-    color: #fff;
-    background-color: #007bff;
-    border-radius: 4px;
-} */
-
 td:last-child a:hover {
     background-color: #0056b3;
 }
-
-
-
 
 .empty-row {
     height: 40px;
@@ -209,23 +190,18 @@ td:last-child a:hover {
     text-align: center;
 }
 
-.pagination a {
-    color: var(--primary-color);
+.pagination a, .pagination span {
+    color: var(--text-color);
+    background-color: var(--secondary-color);
     padding: 8px 16px;
     text-decoration: none;
     transition: background-color 0.3s;
-    border: 1px solid #ddd;
+    border: 1px solid var(--input-border-color);
     margin: 0 4px;
 }
 
 .pagination a:hover {
-    background-color: #ddd;
-}
-
-.pagination span {
-    padding: 8px 16px;
-    border: 1px solid #ddd;
-    margin: 0 4px;
+    background-color: var(--table-row-hover-bg);
 }
 
 /* 푸터 영역 */
@@ -235,4 +211,48 @@ footer {
     background-color: var(--secondary-color);
     color: var(--text-color);
     margin-top: 20px;
+}
+
+/* 링크 스타일 */
+a {
+    color: var(--primary-color);
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+/* 버튼 스타일 */
+.button {
+    background-color: var(--primary-color);
+    color: var(--button-text-color);
+    border: none;
+    padding: 8px 15px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.button:hover {
+    background-color: #218838;
+}
+
+/* 다크 모드 추가 스타일 */
+.dark-mode table {
+    border-color: var(--text-color);
+}
+
+.dark-mode thead th,
+.dark-mode td {
+    border-color: var(--text-color);
+}
+
+.dark-mode a {
+    color: #fff;
+}
+
+.dark-mode button:hover,
+.dark-mode .button:hover {
+    background-color: #2E7D32;
 }
