@@ -26,7 +26,7 @@
             <td>
                 {% if user.user_id == post.user_id %}
                 <form action="{{ url_for('user_dashboard_inquiries_view', userid=post.user_id) }}" method="POST">
-                    <input type="hidden" name="inquiry_id" value="{{ post.inquiries_id }}">
+                    <input type="hidden" name="inquiries_id" value="{{ post.inquiries_id }}">
                     <button type="submit" class="detail-button">내용보기</button>
                 </form>
                 {% else %}

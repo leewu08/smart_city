@@ -41,7 +41,8 @@ os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 @app.before_request
 def update_security_status_on_start():
     if not hasattr(app, "has_run"):
-        manager.update_security_status()
+        manager.user_update_security_status()
+        manager.admin_update_security_status()
         app.has_run = True  # 실행 여부 저장
 
 
@@ -91,6 +92,11 @@ def register():
             flash('이미 등록된 이메일 입니다.', 'error')
             return render_template('register.html')
         
+        if manager.duplicate_reg_number(reg_number):
+            flash('이미 등록된 주민번호 입니다.', 'error')
+            return render_template('register.html')
+
+
         if manager.register_users(user_id, user_name, password, email, address, birthday, reg_number, gender):
             flash('회원가입 신청이 완료되었습니다.', 'success')
             return redirect(url_for('index'))
@@ -369,7 +375,7 @@ def user_dashboard_inquiries_view(userid):
     if request.method == 'POST':
         user = manager.get_user_by_id(userid)
         inquiries_id = request.form.get('inquiries_id')
-        posts = manager.get_inquiry_by_id(inquiries_id)
+        posts = manager.get_inquiry_by_info(inquiries_id)
         return render_template('user_dashboard_inquiry_detail.html', user=user, posts=posts)
 
 #회원탈퇴
@@ -383,8 +389,9 @@ def user_dashboard_delete_user(userid):
     if request.method == 'POST':
         user = manager.get_user_by_id(userid)
         reason = request.form['reason']
-        reason_detail = request.form['reason_detail']
+        detail_reason = request.form['detail_reason']
         manager.update_user_status(userid)
+        manager.save_deleted_user(userid, reason, detail_reason)
         flash("회원탈퇴가 완료되었습니다.", 'success')
         return redirect(url_for('index'))
     
@@ -393,9 +400,26 @@ def user_dashboard_delete_user(userid):
 def delete_user():
     return render_template('delete_user_dashboard.html')
 
-@app.route('/edit_password')
-def edit_password():
-    return render_template('edit_password.html')
+#아이디/비밀번호찾기
+@app.route('/index/search_account', methods=['GET', 'POST'])
+def search_account():
+    if request.method == 'POST':
+        search_type = request.form.get('search_type')
+        username = request.form.get('username')
+        regnumber = request.form.get('regnumber')
+
+        if search_type == "id":
+            userid = manager.get_user_by_name_regnumber(username, regnumber)
+            return render_template('search_account.html', userid=userid )
+
+        elif search_type == "password":
+            userid = request.form.get('userid')
+            password_data = manager.get_user_by_id_name_regnumber(userid, username, regnumber)
+            if password_data: 
+                raw_password = password_data['password']  # 딕셔너리에서 비밀번호 값 가져오기
+                password = raw_password[:4] + '*' * (len(raw_password) - 4)  # 앞 4자리만 표시, 나머지는 '*'
+            return render_template('search_account.html', password = password)
+    return render_template('search_account.html')
 
 ## 로그아웃 라우트
 @app.route('/logout')

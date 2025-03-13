@@ -14,8 +14,8 @@ class DBManager:
     def connect(self): 
         try :
             self.connection = mysql.connector.connect(
-                host = "10.0.66.5",
-                user = "suyong",
+                host = "10.0.66.94",
+                user = "sejong",
                 password="1234",
                 database="smart_city",
                 charset="utf8mb4"
@@ -32,7 +32,8 @@ class DBManager:
             self.connection.close()
     
     ## 서버가 실행될때 보안상태 업데이트
-    def update_security_status(self):
+    #회원 보안상태 업데이트
+    def user_update_security_status(self):
         try: 
             self.connect()
             sql = """
@@ -41,14 +42,32 @@ class DBManager:
                   """
             self.cursor.execute(sql,)
             self.connection.commit()
-            print(f"보안상태 업데이트 완료")
+            print(f"회원 보안상태 업데이트 완료")
             return True
         except Exception as error:
-            print(f"보안상태 업데이트 대상 없음: {error}")
+            print(f"회원 보안상태 업데이트 대상 없음: {error}")
             return False
         finally:
             self.disconnect()    
     
+    #사원 보안상태 업데이트
+    def admin_update_security_status(self):
+        try: 
+            self.connect()
+            sql = """
+                  UPDATE admins SET security_status = 1 
+                  WHERE DATEDIFF(NOW(), password_last_updated) >= 90
+                  """
+            self.cursor.execute(sql,)
+            self.connection.commit()
+            print(f"관리자 보안상태 업데이트 완료")
+            return True
+        except Exception as error:
+            print(f"관리자 보안상태 업데이트 대상 없음: {error}")
+            return False
+        finally:
+            self.disconnect()    
+
     ### 회원가입 정보 처리
     #테이블에 가입한 회원 데이터 삽입
     def register_users(self, user_id, user_name, password, email, address, birthday, reg_number, gender):
@@ -215,22 +234,52 @@ class DBManager:
         finally:
             self.disconnect()
 
-   
-    
-    #전체 가입자 수 카운트 
-    def all_member_count(self):
+    # 주민등록번호 중복 확인
+    def duplicate_reg_number(self, reg_number):
         try:
-            # 회원 수 카운트 쿼리 실행
-            sql = "SELECT COUNT(*) AS member_count FROM members WHERE role != 'admin'"
-            self.connect()  # 데이터베이스 연결
-            self.cursor.execute(sql)
-            result = self.cursor.fetchone()
-            return result['member_count'] 
-        except Exception as error:
-            print(f"회원 수 조회 실패: {error}")
+            self.connect()
+            sql = 'SELECT * FROM users WHERE reg_number = %s'
+            self.cursor.execute(sql, (reg_number,))
+            return self.cursor.fetchone()    
+        except mysql.connector.Error as error:
+            self.connection.rollback()
+            print(f"회원가입 실패: {error}")
             return False
         finally:
             self.disconnect()
+
+    
+    # 비밀번호조회(계정 찾기)
+    def get_user_by_id_name_regnumber(self, userid, username, regnumber):
+        try:
+            self.connect()
+            sql = 'SELECT password FROM users WHERE user_id = %s and user_name = %s and reg_number = %s'
+            values = (userid,username, regnumber)
+            self.cursor.execute(sql, values)
+            return self.cursor.fetchone()    
+        except mysql.connector.Error as error:
+            self.connection.rollback()
+            print(f"비밀번호 조회(계정 찾기) 실패 : {error}")
+            return False
+        finally:
+            self.disconnect()
+    
+    # 아이디 조회(계정 찾기)
+    def get_user_by_name_regnumber(self,username,regnumber):
+        try:
+            self.connect()
+            sql = 'SELECT user_id FROM users WHERE user_name= %s and reg_number = %s'
+            values = (username,regnumber)
+            self.cursor.execute(sql, values)
+            return self.cursor.fetchone()    
+        except mysql.connector.Error as error:
+            self.connection.rollback()
+            print(f"아이디 조회(계정 찾기) 실패: {error}")
+            return False
+        finally:
+            self.disconnect()
+
+
     
     # 도로 CCTV 검색 및 페이지네이션
     def get_road_cctv_query(self, search_query, search_type, per_page, offset):
@@ -445,7 +494,7 @@ class DBManager:
             self.disconnect()
     
     #선택된 문의 정보 가져오기
-    def get_inquiry_by_id(self, inquiries_id):
+    def get_inquiry_by_info(self, inquiries_id):
         try:
             self.connect()
             sql="""
@@ -460,8 +509,41 @@ class DBManager:
         finally:
             self.disconnect()
     
+    #회원탈퇴 후 데이터 저장
+    def update_user_status(self,userid):
+        try: 
+            self.connect()
+            sql = "UPDATE users SET status = 'deleted' WHERE user_id = %s"
+            value = (userid,)
+            self.cursor.execute(sql,value)
+            self.connection.commit()
+            print("계정 상태를 탈퇴로 변경완료했습니다")
+            return True
+        except Exception as error:
+            print(f"계정 상태를 탈퇴로 변경하는데 실패했습니다. : {error}")
+            return False
+        finally:
+            self.disconnect()
+
+    #탈퇴한 회원 사유 테이블에 저장
+    def save_deleted_user(self, userid, reason, detail_reason):
+        try:
+            self.connect()
+            sql = """
+                  INSERT INTO deleted_users (user_id, reason, detail_reason)
+                  VALUES (%s, %s, %s)
+                  """
+            values = (userid, reason, detail_reason)
+            self.cursor.execute(sql, values)
+            self.connection.commit()
+            return True
+        except Exception as error:
+            print(f"회원 정보 저장 실패: {error}")
+            return False
+        finally:
+            self.disconnect()
     
-    # 문의 상태 업데이트 메서드(같은아이디로 반복해서 문의가 올수 있으므로 아이디,작성시간으로 구분해서 처리)
+    # 문의 상태 업데이트 (같은아이디로 반복해서 문의가 올수 있으므로 아이디,작성시간으로 구분해서 처리)
     def update_answer_status(self, userid, enquired_at):
         try: 
             self.connect()
@@ -510,5 +592,6 @@ class DBManager:
             return False
         finally:
             self.disconnect()
+    
     
     

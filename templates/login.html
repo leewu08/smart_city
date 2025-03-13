@@ -23,8 +23,6 @@
     </a>
 </div>
 {% endblock %}
-
-
 {% block content %}
 <div class="login-container">
     <div class="login-form">
@@ -42,8 +40,19 @@
         </form>
         <div class="login-links">
             <a href="{{ url_for ('register')}}">계정이 없으신가요? 등록하기</a>
-            <a href="{{ url_for ('edit_password')}}">비밀번호를 잊어버리셨나요?</a>
+            <a href="#" onclick="openSearchPopup(); return false;">아이디, 비밀번호 찾기</a>
         </div>
     </div>
 </div>
+{% endblock %}
+{% block extra_js %}
+<script>
+    function openSearchPopup() {
+        window.open(
+            "{{ url_for('search_account') }}", 
+            "searchPopup", 
+            "width=500,height=600,left=200,top=100"
+        );
+    }
+</script>
 {% endblock %}

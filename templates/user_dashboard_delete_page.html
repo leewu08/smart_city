@@ -18,8 +18,8 @@
             <option value="기타">기타</option>
         </select>
 
-        <label for="reason_detail">상세 사유 (선택사항)</label>
-        <textarea name="reason_detail" id="reason_detail" rows="4" placeholder="상세한 이유를 입력하세요."></textarea>
+        <label for="detail_reason">상세 사유 (선택사항)</label>
+        <textarea name="detail_reason" id="detail_reason" rows="4" placeholder="상세한 이유를 입력하세요."></textarea>
 
         <button type="submit" class="delete-btn">탈퇴하기</button>
         <a href="{{ url_for('user_dashboard', userid=user.userid) }}" class="cancel-btn">취소</a>
