@@ -1,4 +1,26 @@
-/* static/css/register.css */
+:root {
+    --background-color: #ffffff;
+    --text-color: #4a5568;
+    --primary-color: #4299e1;
+    --border-color: #e2e8f0;
+    --focus-color: #4299e1;
+    --hover-color: #3182ce;
+    --shadow-color: rgba(0, 0, 0, 0.1);
+    --input-background: #ffffff;
+    --button-text-color: #ffffff;
+}
+
+.dark-mode {
+    --background-color: #111;
+    --text-color: #f1f1f1;
+    --primary-color: #4da3ff;
+    --border-color: #333;
+    --focus-color: #6cb2ff;
+    --hover-color: #3d8bd9;
+    --shadow-color: rgba(255, 255, 255, 0.1);
+    --input-background: #444;
+    --button-text-color: #ffffff;
+}
 
 .sign-form-container {
     display: flex;
@@ -6,19 +28,20 @@
     align-items: center;
     min-height: 100vh;
     padding: 20px;
+    background-color: var(--background-color);
 }
 
 .signup-card {
-    background-color: #ffffff;
+    background-color: var(--background-color);
     border-radius: 8px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 6px var(--shadow-color);
     padding: 40px;
     width: 100%;
     max-width: 400px;
 }
 
 .signup-card h2 {
-    color: #4a5568;
+    color: var(--text-color);
     font-size: 24px;
     font-weight: 600;
     margin-bottom: 24px;
@@ -27,7 +50,7 @@
 
 .signup-card .form-label {
     font-weight: 500;
-    color: #4a5568;
+    color: var(--text-color);
     margin-bottom: 6px;
     display: block;
 }
@@ -35,21 +58,23 @@
 .signup-card .form-control {
     width: 100%;
     padding: 10px;
-    border: 1px solid #e2e8f0;
+    border: 1px solid var(--border-color);
     border-radius: 4px;
     margin-bottom: 16px;
     font-size: 14px;
+    background-color: var(--input-background);
+    color: var(--text-color);
 }
 
 .signup-card .form-control:focus {
     outline: none;
-    border-color: #4299e1;
+    border-color: var(--focus-color);
     box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.1);
 }
 
 .signup-card .btn-primary {
-    background-color: #4299e1;
-    color: #ffffff;
+    background-color: var(--primary-color);
+    color: var(--button-text-color);
     border: none;
     padding: 12px;
     font-size: 16px;
@@ -61,17 +86,17 @@
 }
 
 .signup-card .btn-primary:hover {
-    background-color: #3182ce;
+    background-color: var(--hover-color);
 }
 
 .signup-card .form-check-label {
     font-size: 14px;
-    color: #718096;
+    color: var(--text-color);
 }
 
 .signup-card .terms_of_service,
 .signup-card .privacy_policy {
-    color: #4299e1;
+    color: var(--primary-color);
     text-decoration: none;
 }
 
@@ -81,7 +106,7 @@
 }
 
 .signup-card .text_login {
-    color: #718096;
+    color: var(--text-color);
     text-decoration: none;
     font-size: 14px;
     display: block;
@@ -90,7 +115,7 @@
 }
 
 .signup-card .text_login:hover {
-    color: #4299e1;
+    color: var(--primary-color);
 }
 
 .signup-card .reg-number-container {
@@ -99,7 +124,21 @@
     margin-bottom: 16px;
 }
 
+
+/* 주민등록번호 입력란 스타일 추가 */
 .signup-card #regNumberInput,
 .signup-card #regNumberInput2 {
-    flex: 1;
+    background-color: var(--input-background);
+    color: var(--text-color);
+    border: 1px solid var(--border-color, var(--text-color));
+    padding: 10px;
+    border-radius: 4px;
+}
+
+/* 다크 모드일 때 스타일 적용 */
+.dark-mode .signup-card #regNumberInput,
+.dark-mode .signup-card #regNumberInput2 {
+    background-color: var(--input-background);
+    color: var(--text-color);
+    border: 1px solid var(--shadow-color);
 }

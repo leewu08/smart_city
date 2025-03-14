@@ -1,0 +1,105 @@
+/* static/css/search_account.css */
+
+/* Google Fonts - Montserrat */
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;700&display=swap');
+
+body {
+    background-color: #eef2f7;
+    font-family: 'Montserrat', sans-serif;
+    color: #333;
+    margin: 0;
+    padding: 0;
+}
+
+.container {
+    max-width: 450px;
+    margin: 80px auto;
+    background-color: #fff;
+    padding: 40px 30px;
+    border-radius: 8px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+h2 {
+    font-size: 32px;
+    margin-bottom: 20px;
+    text-align: center;
+    color: #2c3e50;
+}
+
+form {
+    display: flex;
+    flex-direction: column;
+}
+
+/* Label 스타일 */
+form label {
+    font-size: 16px;
+    font-weight: 500;
+    margin-bottom: 4px;
+    color: #2c3e50;
+}
+
+/* 입력 필드 스타일 – 모두 100% 너비로 통일 */
+form input[type="text"],
+form input[type="email"],
+form input[type="date"],
+form input[type="password"] {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 8px; /* 입력 필드 간격을 줄임 */
+    border: 1px solid #bdc3c7;
+    border-radius: 4px;
+    font-size: 16px;
+    transition: border-color 0.3s ease;
+}
+
+form input[type="text"]:focus,
+form input[type="email"]:focus,
+form input[type="date"]:focus,
+form input[type="password"]:focus {
+    border-color: #3498db;
+    outline: none;
+}
+
+form input[type="radio"] {
+    margin-right: 10px;
+    transform: scale(1.2);
+}
+
+/* 찾기 버튼: 입력 필드와 너비 통일, 크기는 좀 더 줄임 */
+button[type="submit"] {
+    width: 100%;
+    padding: 6px; /* 버튼 높이 감소 */
+    background-color: #3498db;
+    border: none;
+    border-radius: 4px;
+    color: #fff;
+    font-size: 14px; /* 글씨 크기 감소 */
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+button[type="submit"]:hover {
+    background-color: #2980b9;
+    transform: translateY(-2px);
+}
+
+.result {
+    margin-top: 30px;
+    padding: 20px;
+    background-color: #ecf0f1;
+    border-radius: 4px;
+    text-align: center;
+    font-size: 16px;
+    color: #2c3e50;
+}
+
+/* 모바일 반응형 */
+@media (max-width: 576px) {
+    .container {
+        margin: 20px;
+        padding: 20px;
+    }
+}
