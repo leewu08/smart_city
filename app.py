@@ -7,6 +7,7 @@ from models import DBManager
 from markupsafe import Markup
 import json
 import re
+from api import handle_request  # api.py에서 handle_request 함수 불러오기
 ## sy branch
 app = Flask(__name__)
 
@@ -46,6 +47,9 @@ def update_security_status_on_start():
         app.has_run = True  # 실행 여부 저장
 
 
+@app.route("/api", methods=["GET", "POST"])
+def api():
+    return handle_request()  # handle_request() 함수 호출
 
 
 ### 푸터에 들어갈 날짜데이터 (context_processor 사용)
