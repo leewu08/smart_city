@@ -1,15 +1,42 @@
+/* static/css/login_page.css - 다크 모드 및 라이트 모드 지원 */
+
+:root {
+    --background-color: #f8f9fa;
+    --text-color: #495057;
+    --primary-color: #007bff;
+    --border-color: #ddd;
+    --focus-color: rgba(0, 123, 255, 0.1);
+    --hover-color: #0056b3;
+    --shadow-color: rgba(0, 0, 0, 0.1);
+    --input-background: #ffffff;
+    --button-text-color: #ffffff;
+}
+
+.dark-mode {
+    --background-color: #111;
+    --text-color: #f1f1f1;
+    --primary-color: #4da3ff;
+    --border-color: #333;
+    --focus-color: rgba(108, 178, 255, 0.2);
+    --hover-color: #3d8bd9;
+    --shadow-color: rgba(255, 255, 255, 0.1);
+    --input-background: #444;
+    --button-text-color: #ffffff;
+}
+
 .login-container {
     display: flex;
     justify-content: center;
     align-items: center;
     min-height: calc(100vh - 200px);
+    background-color: var(--background-color);
 }
 
 .login-form {
-    background-color: #fff;
+    background-color: var(--input-background);
     padding: 40px;
     border-radius: 15px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 10px 30px var(--shadow-color);
     width: 100%;
     max-width: 420px;
 }
@@ -17,7 +44,7 @@
 .login-form h2 {
     margin-bottom: 30px;
     text-align: center;
-    color: #333;
+    color: var(--text-color);
     font-size: 28px;
     font-weight: 600;
 }
@@ -29,7 +56,7 @@
 .login-form label {
     display: block;
     margin-bottom: 8px;
-    color: #555;
+    color: var(--text-color);
     font-weight: 500;
 }
 
@@ -37,24 +64,26 @@
 .login-form input[type="password"] {
     width: 100%;
     padding: 12px;
-    border: 1px solid #ddd;
+    border: 1px solid var(--border-color);
     border-radius: 8px;
     font-size: 16px;
+    background-color: var(--input-background);
+    color: var(--text-color);
     transition: border-color 0.3s ease;
 }
 
 .login-form input[type="text"]:focus,
 .login-form input[type="password"]:focus {
-    border-color: #007bff;
-    box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px var(--focus-color);
     outline: none;
 }
 
 .login-form .btn-primary {
     width: 100%;
     padding: 12px;
-    background-color: #007bff;
-    color: #fff;
+    background-color: var(--primary-color);
+    color: var(--button-text-color);
     border: none;
     border-radius: 8px;
     font-size: 18px;
@@ -64,7 +93,7 @@
 }
 
 .login-form .btn-primary:hover {
-    background-color: #0056b3;
+    background-color: var(--hover-color);
 }
 
 .login-form .login-links {
@@ -73,7 +102,7 @@
 }
 
 .login-form .login-links a {
-    color: #007bff;
+    color: var(--primary-color);
     text-decoration: none;
     display: inline-block;
     margin: 0 10px;
@@ -82,7 +111,7 @@
 }
 
 .login-form .login-links a:hover {
-    color: #0056b3;
+    color: var(--hover-color);
     text-decoration: underline;
 }
 
@@ -98,10 +127,12 @@
     z-index: 1000;
     width: 450px;
     height: 70px;
-    box-shadow: 0 4px 6px rgba(81, 139, 14, 0.1);
+    box-shadow: 0 4px 6px var(--shadow-color);
     opacity: 0;
     transition: opacity 0.5s ease-in-out;
     text-align: center;
+    background-color: var(--input-background);
+    color: var(--text-color);
 }
 
 .flash-message.show {

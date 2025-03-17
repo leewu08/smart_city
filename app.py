@@ -121,7 +121,7 @@ def privacy_policy():
 def login_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
-        if 'user_id' not in session:  # 'userid'가 세션에 없다면
+        if 'user_id' not in session and 'admin_id' not in session:  # 'user_id' 또는 'admin_id'가 세션에 없다면
             return redirect('/login')  # 로그인 페이지로 리디렉션
         return f(*args, **kwargs)
     return decorated_function
@@ -150,7 +150,7 @@ def login():
         
         # 사용자 정보 확인
         user = manager.get_user_by_info(id)  # DB에서 사용자 정보를 가져옴
-        admin = manager.get_admin_by_id(id) # DB에서 관리자 정보를 가져옴 
+        admin = manager.get_admin_by_info(id) # DB에서 관리자 정보를 가져옴 
 
         if user:  # user가 None이 아닐 경우에만 진행
             if id and password:
@@ -175,7 +175,7 @@ def login():
                     session['admin_id'] = id #세션에 관리자 아이디 저장
                     session['admin_name'] = admin['admin_name'] #세션에 관리자이름 저장
                     manager.update_admin_last_login(id) # 로그인 성공 후 관리자 마지막 로그인 갱신
-                    return redirect(url_for('admin_dashboard')) #관리자 페이지로 이동
+                    return redirect(url_for('admin_dashboard', admin = admin)) #관리자 페이지로 이동
                 else: 
                     flash('아이디 또는 비밀번호가 일치하지 않습니다.', 'error')  # 로그인 실패 시 메시지
                     return redirect(url_for('login'))  # 로그인 폼 다시 렌더링 
@@ -333,13 +333,21 @@ def user_dashboard_sidewalk(userid):
         user = user
     )
 
-#cctv 상세보기
+#회원용 상세보기 라우트
 @app.route('/user_dashboard/cctv/<userid>/<int:street_light_id>')
 @login_required
 def user_dashboard_cctv(userid,street_light_id):
     user = manager.get_user_by_info(userid)
     camera = manager.get_camera_by_info(street_light_id)
     return render_template('user_dashboard_cctv.html', user=user, camera=camera)
+
+# 관리자용 상세보기 라우트
+@app.route('/user_dashboard/cctv/<int:street_light_id>')
+@admin_required
+def admin_dashboard_cctv(street_light_id):
+    admin = manager.get_admin_by_id(session['admin_id'])
+    camera = manager.get_camera_by_info(street_light_id)
+    return render_template('user_dashboard_cctv.html', user=admin, camera=camera, is_admin=True)
 
 #회원페이지 문의하기
 @app.route('/user_dashboard/inquiries/<userid>', methods=['GET','POST'])
@@ -432,9 +440,9 @@ def search_account():
 def edit_password(userid):
     user = manager.get_user_by_info(userid)
     if request.method == 'POST': 
-       password = request.form['new_password']
-       success = manager.update_user_password(userid, password)
-       return jsonify({"success": success})
+        password = request.form['new_password']
+        success = manager.update_user_password(userid, password)
+        return jsonify({"success": success})
     return render_template('edit_password.html', user = user)
     
 
@@ -452,11 +460,21 @@ def logout():
 @app.route('/admin_dashboard')
 @admin_required  # 관리자만 접근 가능
 def admin_dashboard():
-    adminid = session['adminid']
+    adminid = session['admin_id']
     admin = manager.get_admin_by_id(adminid)
     return render_template('admin_dashboard.html', admin=admin)  # 관리자 대시보드 렌더링
 
+@app.route("/lamp_check/<userid>")
+def lamp_check(userid):
+    return render_template("lamp_check.html")
 
+@app.route("/load_car/<userid>")
+def load_car(userid):
+    return render_template("load_car.html")
+
+@app.route("/sidewalk_motorcycle/<userid>")
+def sidewalk_motorcycle(userid):
+    return render_template("sidewalk_motorcycle.html")
 
 ## 기능소개 페이지
 
