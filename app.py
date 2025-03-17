@@ -150,7 +150,7 @@ def login():
         
         # 사용자 정보 확인
         user = manager.get_user_by_info(id)  # DB에서 사용자 정보를 가져옴
-        admin = manager.get_admin_by_id(id) # DB에서 관리자 정보를 가져옴 
+        admin = manager.get_admin_by_info(id) # DB에서 관리자 정보를 가져옴 
 
         if user:  # user가 None이 아닐 경우에만 진행
             if id and password:
@@ -175,7 +175,7 @@ def login():
                     session['admin_id'] = id #세션에 관리자 아이디 저장
                     session['admin_name'] = admin['admin_name'] #세션에 관리자이름 저장
                     manager.update_admin_last_login(id) # 로그인 성공 후 관리자 마지막 로그인 갱신
-                    return redirect(url_for('admin_dashboard')) #관리자 페이지로 이동
+                    return redirect(url_for('admin_dashboard', admin = admin)) #관리자 페이지로 이동
                 else: 
                     flash('아이디 또는 비밀번호가 일치하지 않습니다.', 'error')  # 로그인 실패 시 메시지
                     return redirect(url_for('login'))  # 로그인 폼 다시 렌더링 
@@ -452,7 +452,7 @@ def logout():
 @app.route('/admin_dashboard')
 @admin_required  # 관리자만 접근 가능
 def admin_dashboard():
-    adminid = session['adminid']
+    adminid = session['admin_id']
     admin = manager.get_admin_by_id(adminid)
     return render_template('admin_dashboard.html', admin=admin)  # 관리자 대시보드 렌더링
 

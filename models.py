@@ -120,6 +120,19 @@ class DBManager:
     def get_admin_by_id(self, id):
         try:
             self.connect()
+            sql = "SELECT admin_id,password FROM admins WHERE admin_id = %s"
+            value = (id,)
+            self.cursor.execute(sql,value)
+            return self.cursor.fetchone()
+        except mysql.connector.Error as error :
+            print(f"관리자 정보 가져오기 연결 실패: {error}")
+            return None 
+        finally:
+            self.disconnect()
+
+    def get_admin_by_info(self, id):
+        try:
+            self.connect()
             sql = "SELECT * FROM admins WHERE admin_id = %s"
             value = (id,)
             self.cursor.execute(sql,value)
