@@ -50,23 +50,6 @@ class DBManager:
         finally:
             self.disconnect()    
     
-    #사원 보안상태 업데이트
-    def admin_update_security_status(self):
-        try: 
-            self.connect()
-            sql = """
-                  UPDATE admins SET security_status = 1 
-                  WHERE DATEDIFF(NOW(), password_last_updated) >= 90
-                  """
-            self.cursor.execute(sql,)
-            self.connection.commit()
-            print(f"관리자 보안상태 업데이트 완료")
-            return True
-        except Exception as error:
-            print(f"관리자 보안상태 업데이트 대상 없음: {error}")
-            return False
-        finally:
-            self.disconnect()    
 
     ### 회원가입 정보 처리
     #테이블에 가입한 회원 데이터 삽입
