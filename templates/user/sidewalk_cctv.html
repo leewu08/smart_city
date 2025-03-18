@@ -10,7 +10,7 @@
         <i class="fa-solid fa-lightbulb" style="color: rgb(236, 119, 9);"></i>
         <span class="total-count">검색된 가로등 : {{ total_posts }}개</span>
     </div>
-    <form method="get" action="{{ url_for('user_dashboard_sidewalk') }}">
+    <form method="get" action="{{ url_for('user_dashboard_sidewalk_cctv') }}">
         <label for="search_type">검색 타입:</label>
         <select name="search_type" id="search_type">
             <option value="street_light_id" {% if search_type == 'street_light_id' %}selected{% endif %}>가로등 번호</option>
@@ -64,11 +64,11 @@
 <!-- 페이지네이션 -->
 <div class="pagination">
     {% if prev_page %}
-        <a href="{{ url_for('user_dashboard_sidewalk', search_query=search_query, search_type=search_type, page=prev_page) }}">이전</a>
+        <a href="{{ url_for('user_dashboard_sidewalk_cctv', search_query=search_query, search_type=search_type, page=prev_page) }}">이전</a>
     {% endif %}
     <span>페이지 {{ page }} / {{ total_pages }}</span>
     {% if next_page %}
-        <a href="{{ url_for('user_dashboard_sidewalk', search_query=search_query, search_type=search_type, page=next_page) }}">다음</a>
+        <a href="{{ url_for('user_dashboard_sidewalk_cctv', search_query=search_query, search_type=search_type, page=next_page) }}">다음</a>
     {% endif %}
 </div>
 {% endblock %}

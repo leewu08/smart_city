@@ -78,7 +78,7 @@ function fetchSensorData() {
 
             if (!isValidData) {
                 console.warn("⚠️ 해당 목적에 맞는 데이터가 없습니다.");
-                document.getElementById("safety-status").innerHTML = "센서 데이터 없음";
+                document.getElementById("safety-status").innerHTML = "";
                 document.getElementById("temperature-info").innerHTML = "";
                 return;
             }

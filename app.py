@@ -304,7 +304,7 @@ def user_dashboard_about():
 #로그인 후 도로CCTV 페이지
 @app.route('/user/dashboard/road', methods=['GET'])
 @login_required
-def user_dashboard_road():
+def user_dashboard_road_cctv():
     search_query = request.args.get("search_query", "").strip()
     search_type = request.args.get("search_type", "all")  # 기본값은 'all'
     page = request.args.get("page", 1, type=int)
@@ -345,7 +345,7 @@ def user_dashboard_road():
 #로그인 후 인도CCTV 페이지
 @app.route('/user/dashboard/sidewalk', methods=['GET'])
 @login_required
-def user_dashboard_sidewalk():
+def user_dashboard_sidewalk_cctv():
     search_query = request.args.get("search_query", "").strip()
     search_type = request.args.get("search_type", "all")  # 기본값은 'all'
     page = request.args.get("page", 1, type=int)
@@ -381,22 +381,13 @@ def user_dashboard_sidewalk():
         next_page=next_page,
     )
 
-#회원용 상세보기 라우트
+#회원용 CCTV 상세 보기
 @app.route('/user_dashboard/cctv/<int:street_light_id>')
 @login_required
 def user_dashboard_cctv(street_light_id):
     camera = manager.get_camera_by_info(street_light_id)
-    return render_template('user_dashboard_cctv.html', camera=camera)
+    return render_template('user/view_cctv.html', camera=camera)
 
-
-# 관리자용 상세보기 라우트
-@app.route('/user_dashboard/cctv/<int:street_light_id>')
-@admin_required
-def admin_dashboard_cctv(street_light_id):
-    admin = manager.get_admin_by_id(session['admin_id'])
-    camera = manager.get_camera_by_info(street_light_id)
-    # sensor = sidewalk_sensor
-    return render_template('user_dashboard_cctv.html', user=admin, camera=camera, is_admin=True)
 
 #회원페이지 문의하기
 @app.route('/user_dashboard/inquiries/<userid>', methods=['GET','POST'])
@@ -437,12 +428,13 @@ def user_dashboard_inquiries_view(userid):
 
 
 #회원탈퇴
-@app.route('/user_dashboard/delete_user/<userid>', methods=['GET','POST'])
+@app.route('/user_dashboard/delete_user', methods=['GET','POST'])
 @login_required
-def user_dashboard_delete_user(userid):
+def user_dashboard_delete_user():
+    userid = session['user_id']
     if request.method == 'GET':
         user = manager.get_user_by_id(userid)
-        return render_template('user_dashboard_delete_page.html', user =user)
+        return render_template('user/delete_page.html', user =user)
     
     if request.method == 'POST':
         user = manager.get_user_by_id(userid)
@@ -509,8 +501,7 @@ def logout():
 @app.route('/admin_dashboard')
 @admin_required  # 관리자만 접근 가능
 def admin_dashboard():
-    adminid = session.get('admin_id')
-    return render_template('admin/dashboard.html', adminid=adminid)  # 관리자 대시보드 렌더링
+    return render_template('admin/dashboard.html')  # 관리자 대시보드 렌더링
 
 
 ## CCTV보기
@@ -518,16 +509,21 @@ def admin_dashboard():
 @app.route("/admin/road_cctv")
 @admin_required
 def admin_road_cctv():
-    adminid =session.get('admin_id')
-    return render_template("admin/road_cctv.html", stream_url=road_url, adminid=adminid)
+    return render_template("admin/road_cctv.html", stream_url=road_url)
 
 #인도용 CCTV보기
 @app.route("/admin/sidewalk_cctv")
 @admin_required
 def admin_sidewalk_cctv():
-    adminid =session.get('admin_id')
-    return render_template("admin/sidewalk_cctv.html", adminid=adminid)
+    return render_template("admin/sidewalk_cctv.html", stream_url=road_url)
 
+# 관리자 CCTV상세보기
+# @app.route('/admin/cctv/<int:street_light_id>')
+# @admin_required
+# def admin_dashboard_cctv(street_light_id):
+#     camera = manager.get_camera_by_info(street_light_id)
+#     # sensor = sidewalk_sensor
+#     return render_template('view_cctv.html', camera=camera)
 
 ## 가로등
 #전체 가로등 조회
@@ -551,6 +547,7 @@ def admin_load_car():
 def admin_sidewalk_motorcycle():
     adminid = session.get('admin_id')
     return render_template("admin/sidewalk_motorcycle.html", adminid=adminid)
+
 # # YOLO 분석된 영상 스트리밍
 # @app.route("/processed_video_feed")
 # def processed_video_feed():

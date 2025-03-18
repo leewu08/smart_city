@@ -8,7 +8,7 @@
     <h2>회원 탈퇴</h2>
     <p>{{ user.user_name }}님, 정말로 탈퇴하시겠습니까?</p>
 
-    <form class="delete-form"action="{{ url_for('user_dashboard_delete_user', userid=user.user_id) }}" method="POST">
+    <form class="delete-form"action="{{ url_for('user_dashboard_delete_user') }}" method="POST">
         <label for="reason">탈퇴 사유</label>
         <select name="reason" id="reason" required>
             <option value="">선택하세요</option>
@@ -22,7 +22,7 @@
         <textarea name="detail_reason" id="detail_reason" rows="4" placeholder="상세한 이유를 입력하세요."></textarea>
 
         <button type="submit" class="delete-btn">탈퇴하기</button>
-        <a href="{{ url_for('user_dashboard', userid=user.userid) }}" class="cancel-btn">취소</a>
+        <a href="{{ url_for('user_dashboard') }}" class="cancel-btn">취소</a>
     </form>
 </div>
 {% endblock %}
