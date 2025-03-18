@@ -1,44 +1,52 @@
-import cv2
-import requests
-import numpy as np
-from flask import Flask, Response
-
-# ✅ 원본 스트리밍 서버 주소 (여러 개의 서버에서 동일한 주소를 사용 가능)
-STREAM_SERVER_URL = "http://10.0.66.94:5000/video_feed"
+from flask import Flask, request, jsonify, render_template
 
 app = Flask(__name__)
+  # 올바른 Flask 인스턴스 생성
 
-def generate_frames():
-    """원본 스트리밍 서버의 MJPEG 데이터를 받아서 재전송하는 함수"""
-    while True:
-        img_resp = requests.get(STREAM_SERVER_URL, stream=True)
-        if img_resp.status_code == 200:
-            bytes_stream = bytes()
-            for chunk in img_resp.iter_content(chunk_size=1024):
-                bytes_stream += chunk
-                a = bytes_stream.find(b'\xff\xd8')
-                b = bytes_stream.find(b'\xff\xd9')
-                if a != -1 and b != -1:
-                    jpg = bytes_stream[a:b+2]
-                    bytes_stream = bytes_stream[b+2:]
-                    frame = cv2.imdecode(np.frombuffer(jpg, dtype=np.uint8), cv2.IMREAD_COLOR)
+# 현재 LED 상태 저장
+led_state = {'LED1': 'OFF', 'LED2': 'OFF', 'AUTO_MODE1': False, 'AUTO_MODE2': False}
 
-                    # OpenCV에서 MJPEG로 변환
-                    _, buffer = cv2.imencode('.jpg', frame)
-                    frame_bytes = buffer.tobytes()
+@app.route('/control_led', methods=['POST'])
+def control_led():
+    """ 아두이노가 LED 상태를 가져가기 위한 API """
+    data = request.json
+    device_id = data.get('ID')  # 제어할 아두이노 ID
 
-                    yield (b'--frame\r\n'
-                           b'Content-Type: image/jpeg\r\n\r\n' + frame_bytes + b'\r\n')
+    if device_id == "1":
+        return jsonify({'LED1': led_state['LED1'], 'AUTO_MODE1': led_state['AUTO_MODE1']})
+    elif device_id == "2":
+        return jsonify({'LED2': led_state['LED2'], 'AUTO_MODE2': led_state['AUTO_MODE2']})
 
-@app.route('/video_feed')
-def video_feed():
-    """Flask에서 스트리밍 데이터를 제공하는 엔드포인트"""
-    return Response(generate_frames(), mimetype='multipart/x-mixed-replace; boundary=frame')
+    return jsonify({'error': 'Invalid device ID'}), 400
+
+@app.route('/set_led', methods=['POST'])
+def set_led():
+    """ 웹에서 LED 상태를 변경하는 API """
+    data = request.json
+    action = data.get('action')  # 'LED_ON', 'LED_OFF', 'AUTO_MODE'
+    device_id = data.get('ID')
+
+    if device_id == "1":
+        if action == "LED_ON":
+            led_state['LED1'] = 'ON'
+        elif action == "LED_OFF":
+            led_state['LED1'] = 'OFF'
+        elif action == "AUTO_MODE":
+            led_state['AUTO_MODE1'] = not led_state['AUTO_MODE1']
+
+    elif device_id == "2":
+        if action == "LED_ON":
+            led_state['LED2'] = 'ON'
+        elif action == "LED_OFF":
+            led_state['LED2'] = 'OFF'
+        elif action == "AUTO_MODE":
+            led_state['AUTO_MODE2'] = not led_state['AUTO_MODE2']
+
+    return jsonify({'status': 'success', 'led_state': led_state})
 
 @app.route('/')
 def index():
-    return """<html><body><h1>ESP32-CAM Streaming Client</h1>
-              <img src="/video_feed" width="640" height="480"></body></html>"""
+    return render_template("LedControl.html")  # 'templates' 폴더에 있어야 함
 
-if __name__ == "__main__":
-    app.run(host='0.0.0.0', port=5001, debug=True, threaded=True)
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=5010, debug=True)

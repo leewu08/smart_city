@@ -7,10 +7,10 @@ from models import DBManager
 from markupsafe import Markup
 import json
 import re
-import threading
-import license_plate
-import cv2
-import motorcycle
+# import threading
+# import license_plate
+# import cv2
+# import motorcycle
 
 from api import handle_request  # api.py에서 handle_request 함수 불러오기
 ## sy branch
@@ -50,10 +50,42 @@ def update_security_status_on_start():
         manager.user_update_security_status()
         app.has_run = True  # 실행 여부 저장
 
+# 전역 변수로 데이터 저장
+received_data = {"message": "No data received"}
 
-@app.route("/api", methods=["GET", "POST"])
-def api():
-    return handle_request()  # handle_request() 함수 호출
+@app.route('/api', methods=['GET', 'POST'])
+def handle_request():
+    global received_data
+
+    if request.method == "POST":
+        if request.is_json:
+            received_data = request.get_json()
+            return jsonify({"status": "success", "message": "JSON data received", "data": received_data})
+
+        if not request.form:
+            return jsonify({"status": "error", "message": "No data received"}), 400
+
+        raw_data_list = list(request.form.keys())
+        if not raw_data_list:
+            return jsonify({"status": "error", "message": "Empty form data"}), 400
+
+        raw_data = raw_data_list[0]
+        data_dict = {}
+
+        pairs = raw_data.split("|")
+        for pair in pairs:
+            key_value = pair.strip().split(":")
+            if len(key_value) == 2:
+                key, value = key_value[0].strip(), key_value[1].strip()
+                data_dict[key] = value
+
+        received_data = data_dict
+        print(f"📩 변환된 데이터: {received_data}")  # 터미널에서 확인
+
+        return jsonify(received_data)
+
+    # GET 요청 시 현재 데이터를 반환
+    return jsonify(received_data)
 
 
 ### 푸터에 들어갈 날짜데이터 (context_processor 사용)
@@ -349,12 +381,14 @@ def user_dashboard_cctv(userid,street_light_id):
     camera = manager.get_camera_by_info(street_light_id)
     return render_template('user_dashboard_cctv.html', user=user, camera=camera)
 
+
 # 관리자용 상세보기 라우트
 @app.route('/user_dashboard/cctv/<int:street_light_id>')
 @admin_required
 def admin_dashboard_cctv(street_light_id):
     admin = manager.get_admin_by_id(session['admin_id'])
     camera = manager.get_camera_by_info(street_light_id)
+    # sensor = sidewalk_sensor
     return render_template('user_dashboard_cctv.html', user=admin, camera=camera, is_admin=True)
 
 #회원페이지 문의하기
@@ -480,58 +514,58 @@ def lamp_check(userid):
 def load_car(userid):
     return render_template("load_car.html", stream_url=road_url)
 
-# YOLO 분석된 영상 스트리밍
-@app.route("/processed_video_feed")
-def processed_video_feed():
-    """YOLOv8로 감지된 영상 스트리밍"""
-    def generate():
-        while True:
-            with license_plate.lock:
-                if license_plate.frame is None:
-                    continue
-                img = license_plate.frame.copy()
+# # YOLO 분석된 영상 스트리밍
+# @app.route("/processed_video_feed")
+# def processed_video_feed():
+#     """YOLOv8로 감지된 영상 스트리밍"""
+#     def generate():
+#         while True:
+#             with license_plate.lock:
+#                 if license_plate.frame is None:
+#                     continue
+#                 img = license_plate.frame.copy()
 
-            results = license_plate.model(img)
-            for result in results:
-                boxes = result.boxes.xyxy.cpu().numpy()
-                for box in boxes:
-                    x1, y1, x2, y2 = map(int, box)
-                    cv2.rectangle(img, (x1, y1), (x2, y2), (0, 255, 0), 2)
+#             results = license_plate.model(img)
+#             for result in results:
+#                 boxes = result.boxes.xyxy.cpu().numpy()
+#                 for box in boxes:
+#                     x1, y1, x2, y2 = map(int, box)
+#                     cv2.rectangle(img, (x1, y1), (x2, y2), (0, 255, 0), 2)
 
-            _, jpeg = cv2.imencode('.jpg', img)
-            yield (b'--frame\r\n'
-                   b'Content-Type: image/jpeg\r\n\r\n' + jpeg.tobytes() + b'\r\n')
+#             _, jpeg = cv2.imencode('.jpg', img)
+#             yield (b'--frame\r\n'
+#                    b'Content-Type: image/jpeg\r\n\r\n' + jpeg.tobytes() + b'\r\n')
 
-    return Response(generate(), mimetype='multipart/x-mixed-replace; boundary=frame')
+#     return Response(generate(), mimetype='multipart/x-mixed-replace; boundary=frame')
 
-# OCR 결과 API
-@app.route("/ocr_result", methods=["GET"])
-def get_ocr_result():
-    """OCR 결과 반환 API"""
-    response_data = {"license_plate": license_plate.ocr_result, "alert_message": license_plate.alert_message}
+# # OCR 결과 API
+# @app.route("/ocr_result", methods=["GET"])
+# def get_ocr_result():
+#     """OCR 결과 반환 API"""
+#     response_data = {"license_plate": license_plate.ocr_result, "alert_message": license_plate.alert_message}
 
-    if license_plate.alert_message:  # 알람 메시지가 있을 때만 초기화
-        license_plate.alert_message = ""  # 메시지를 한 번만 표시하도록 초기화
+#     if license_plate.alert_message:  # 알람 메시지가 있을 때만 초기화
+#         license_plate.alert_message = ""  # 메시지를 한 번만 표시하도록 초기화
     
-    return jsonify(response_data)
+#     return jsonify(response_data)
 
 @app.route("/sidewalk_motorcycle/<userid>")
 def sidewalk_motorcycle(userid):
     return render_template("sidewalk_motorcycle.html")
 
 
-# ✅ ESP32-CAM에서 감지된 오토바이 영상 제공
-@app.route("/video_feed")
-def video_feed():
-    """ESP32-CAM 스트리밍"""
-    return Response(motorcycle.get_video_frame(), mimetype="multipart/x-mixed-replace; boundary=frame")
+# # ✅ ESP32-CAM에서 감지된 오토바이 영상 제공
+# @app.route("/video_feed")
+# def video_feed():
+#     """ESP32-CAM 스트리밍"""
+#     return Response(motorcycle.get_video_frame(), mimetype="multipart/x-mixed-replace; boundary=frame")
 
 
-# ✅ 오토바이 감지 상태 API
-@app.route("/alert_status", methods=["GET"])
-def alert_status():
-    """오토바이 감지 상태 반환"""
-    return jsonify(motorcycle.get_alert_status())
+# # ✅ 오토바이 감지 상태 API
+# @app.route("/alert_status", methods=["GET"])
+# def alert_status():
+#     """오토바이 감지 상태 반환"""
+#     return jsonify(motorcycle.get_alert_status())
 
 
 ## 기능소개 페이지

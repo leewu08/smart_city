@@ -32,6 +32,6 @@ def handle_request():
         received_data = data_dict
         print(f"📩 변환된 데이터: {received_data}")  # 터미널에서 확인
 
-        return jsonify({"status": "success", "message": "Form data received", "data": received_data})
+        return received_data
 
-    return jsonify(received_data)  # GET 요청 시 최신 데이터 반환
+    return received_data  # GET 요청 시 최신 데이터 반환

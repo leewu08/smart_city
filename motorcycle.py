@@ -69,7 +69,7 @@ def detect_motorcycle():
                             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
                             img_path = os.path.join(MOTORCYCLE_IMAGE_FOLDER, f"motorcycle_{timestamp}.jpg")
                             cv2.imwrite(img_path, frame)
-                            print(f"📸 오토바이 감지! 이미지 저장: {img_path}")
+                            # print(f"📸 오토바이 감지! 이미지 저장: {img_path}")
 
                 # ✅ 오토바이 감지 상태 업데이트
                 if detected:
@@ -79,7 +79,7 @@ def detect_motorcycle():
                     motorcycle_detected = False  # 일정 시간이 지나면 감지 상태 해제
 
         except Exception as e:
-            print(f"❌ ESP32-CAM 스트리밍 오류: {e}")
+            # print(f"❌ ESP32-CAM 스트리밍 오류: {e}")
             break
 
 

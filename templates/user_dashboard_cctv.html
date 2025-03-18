@@ -51,7 +51,72 @@
         <div class="cctv-info">
             <h2>실시간 영상 스트리밍 중...</h2>
             <p>해당 CCTV는 {{ camera.location }} 위치에서 {{ camera.purpose}}를 실시간 모니터링 중입니다.</p>
+            <p id="safety-status">데이터 로드 중...</p>
+            <p id="temperature-info">센서 데이터 로드 중...</p>
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function fetchSensorData() {
+    fetch('/api')  // Flask API 호출
+        .then(response => response.json())
+        .then(data => {
+            console.log("📩 받은 데이터:", data);
+
+            // camera.purpose 값 가져오기
+            let purpose = "{{ camera.purpose }}";  // '도로' 또는 '인도'
+
+            // ID 필터링
+            let isValidData = false;
+            if ((purpose === "도로" && data.ID == "1") || 
+                (purpose === "인도" && data.ID == "2")) {
+                isValidData = true;
+            }
+
+            if (!isValidData) {
+                console.warn("⚠️ 해당 목적에 맞는 데이터가 없습니다.");
+                document.getElementById("safety-status").innerHTML = "센서 데이터 없음";
+                document.getElementById("temperature-info").innerHTML = "";
+                return;
+            }
+
+            // 안전 상태 업데이트
+            let safetyStatus = document.getElementById("safety-status");
+            if (data["Switch State"] == "1") {
+                safetyStatus.innerHTML = "🔹 현재 가로등 주변은 안전합니다.";
+            } else {
+                safetyStatus.innerHTML = "⚠️ 긴급 상황! SOS 버튼이 눌렸습니다!";
+            }
+
+            // 온습도 정보 업데이트 (undefined 값 체크 후 표시)
+            let temperatureInfo = document.getElementById("temperature-info");
+            let temperature = data.Temperature;
+            let humidity = data.Humidity;
+            let heatIndex = data["Heat Index"];
+
+            if (temperature !== undefined && humidity !== undefined && heatIndex !== undefined) {
+                temperatureInfo.innerHTML = `현재 {{camera.location}}의 기온은 ${temperature}, 
+                                             습도는 ${humidity}, 
+                                             체감온도는 ${heatIndex} 입니다.`;
+            } else {
+                temperatureInfo.innerHTML = "";  // 값이 없으면 아예 표시하지 않음
+            }
+        })
+        .catch(error => {
+            console.error("데이터 불러오기 실패:", error);
+            document.getElementById("safety-status").innerHTML = "센서 데이터 로드 실패";
+            document.getElementById("temperature-info").innerHTML = "";
+        });
+}
+
+// 2초마다 데이터 갱신
+setInterval(fetchSensorData, 2000);
+
+// 페이지 로드 시 데이터 가져오기
+fetchSensorData();
+
+</script>
 {% endblock %}

@@ -41,7 +41,7 @@ def fetch_stream():
     while True:
         ret, img = cap.read()
         if not ret:
-            print("❌ 프레임을 가져올 수 없습니다.")
+            # print("❌ 프레임을 가져올 수 없습니다.")
             continue
 
         with lock:
@@ -70,7 +70,7 @@ def detect_license_plate():
                     plate_text = run_ocr(plate_img)  # OCR 실행
                     if plate_text:
                         plate_counts[plate_text] = plate_counts.get(plate_text, 0) + 1
-                        print(f"✅ {plate_text} 감지됨 (횟수: {plate_counts[plate_text]})")
+                        # print(f"✅ {plate_text} 감지됨 (횟수: {plate_counts[plate_text]})")
 
                         if plate_counts[plate_text] >= ALERT_THRESHOLD and plate_text not in saved_plates:
                             save_detected_plate(plate_text, img)
@@ -99,7 +99,7 @@ def run_ocr(plate_img):
         if texts:
             raw_text = texts[0]["description"].strip()
             plate_text = clean_license_plate_text(raw_text)  # 번호판 정리
-            print(f"✅ OCR 감지 번호판: {plate_text}")
+            # print(f"✅ OCR 감지 번호판: {plate_text}")
 
             ocr_result = plate_text
             return plate_text
