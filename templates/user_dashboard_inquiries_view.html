@@ -3,9 +3,17 @@
 
 {% block extra_css %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/user_dashboard_inquiries_view.css') }}">
+<style>
+    .container{
+        min-height: 600px;
+        margin-top : 150px;
+    }
+</style>
 {% endblock %}
 
 {% block content %}
+<div class="container">
+<h2 style="text-align: center;">문의 내역</h2>
 <table class="inquiry-table">
     <thead>
         <tr>
@@ -20,7 +28,7 @@
     <tbody>
         {% for post in posts %}
         <tr>
-            <td>{{ post.inquiries_id }}</td>
+            <td>{{ loop.index }}</td>
             <td>{{ post.user_name }}</td>
             <td>{{ post.inquiry_reason }}</td>
             <td>
@@ -46,5 +54,6 @@
         {% endfor %}
     </tbody>
 </table>
+</div>
 <script src="https://kit.fontawesome.com/your-kit-id.js" crossorigin="anonymous"></script>
 {% endblock %}

@@ -161,7 +161,7 @@ def privacy_policy():
 def login_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
-        if 'user_id' not in session and 'admin_id' not in session:  # 'user_id' 또는 'admin_id'가 세션에 없다면
+        if 'user_id' not in session and 'admin_id' not in session :  # 'user_id' 또는 'admin_id'가 세션에 없다면
             return redirect('/login')  # 로그인 페이지로 리디렉션
         return f(*args, **kwargs)
     return decorated_function
@@ -202,9 +202,11 @@ def login():
                         if user['security_status'] == 1 : #보안이 위험일때 경고알림
                             message = Markup('암호를 변경한지 90일 지났습니다.<br>암호를 변경하시길 권장합니다.')#Markup과 <br>태그로 flash메세지 줄나눔
                             flash(message, 'warning')
-                        return redirect(url_for('user_dashboard', userid=session['user_id'])) # 회원 페이지로 이동
+                        return redirect(url_for('user_dashboard')) # 회원 페이지로 이동
                     else :
-                        return render_template('delete_user_dashboard.html', userid=session['user_id']) # 탈퇴한 계정
+                        session.clear() # 세션을 초기화
+                        flash('회원 탈퇴된 계정입니다. 관리자 이메일로 문의하세요', 'error')
+                        return redirect('login') # 탈퇴한 계정
                 else:
                     flash('아이디 또는 비밀번호가 일치하지 않습니다.', 'error')  # 로그인 실패 시 메시지
                     return redirect(url_for('login'))  # 로그인 폼 다시 렌더링          
@@ -215,7 +217,7 @@ def login():
                     session['admin_id'] = id #세션에 관리자 아이디 저장
                     session['admin_name'] = admin['admin_name'] #세션에 관리자이름 저장
                     manager.update_admin_last_login(id) # 로그인 성공 후 관리자 마지막 로그인 갱신
-                    return redirect(url_for('admin_dashboard', admin = admin)) #관리자 페이지로 이동
+                    return redirect(url_for('admin_dashboard')) #관리자 페이지로 이동
                 else: 
                     flash('아이디 또는 비밀번호가 일치하지 않습니다.', 'error')  # 로그인 실패 시 메시지
                     return redirect(url_for('login'))  # 로그인 폼 다시 렌더링 
@@ -233,17 +235,16 @@ def need_login():
 
 ### 회원 페이지
 ##로그인 후 회원페이지
-@app.route('/user_dashboard')
+@app.route('/user/dashboard')
 @login_required
 def user_dashboard():
-    userid = session['user_id']
-    user=manager.get_user_by_id(userid)
-    return render_template('user_dashboard.html', user=user )
+    return render_template('user/dashboard.html') 
 
 ##회원 정보 수정 
-@app.route('/user_dashboard/update_profile/<userid>', methods=['GET', 'POST'])
+@app.route('/user/dashboard/update_profile', methods=['GET', 'POST'])
 @login_required
-def update_profile(userid):
+def user_update_profile():
+    userid = session['user_id']  # 세션에서 사용자 아이디 가져오기
     user = manager.get_user_by_info(userid)  # 회원 정보 가져오기
 
     if request.method == 'POST':
@@ -254,6 +255,8 @@ def update_profile(userid):
         confirm_password = request.form['confirm_password'] if request.form['confirm_password'] else None
         address = request.form['address'] if request.form['address'] else user.address
         username = request.form['username'] if request.form['username'] else user.user_name
+
+        password_change = False  # 비밀번호 변경 여부
         # 비밀번호가 입력되었으면 확인
         if password:
             if password != confirm_password:
@@ -264,34 +267,44 @@ def update_profile(userid):
             # 예시: 비밀번호 길이, 숫자 포함 여부 등
            
             if password == user['password'] : 
-                flash('현재 비밀번호와 일치합니다.', 'warning')
+                flash('현재 비밀번호와 동일한 비밀번호로 변경할 수 없습니다.', 'warning')
                 return redirect(request.url) #현재 페이지로 리디렉션
             # 비밀번호 업데이트
             else:
-                flash('비밀번호를 변경하였습니다', 'success')
+                password_change = True  # 비밀번호 변경 여부 True로 설정
                 manager.update_user_password(userid, password)
-        # 나머지 정보 업데이트
-        manager.update_user_info(userid, username, email, address)
+                session.clear()
+                flash('비밀번호를 변경하였습니다', 'success')
+                return redirect(url_for('login'))  # 로그인 페이지로 리디렉션
+            
+        if email == user['email'] and address == user['address'] and username == user['user_name'] :
+            if password_change :
+                manager.update_user_info(userid, username, email, address)
+                session['user_name'] = username
+                flash('회원 정보가 성공적으로 수정되었습니다.', 'success')
+                return redirect(url_for('user_dashboard'))
+            else:
+                flash('수정된 정보가 없습니다.', 'warning')
+                return redirect(request.url)
+        else:
+            manager.update_user_info(userid, username, email, address)
+            session['user_name'] = username
+            flash('회원 정보가 성공적으로 수정되었습니다.', 'success')
+            return redirect(url_for('user_dashboard'))
 
-        # 성공 메시지나 다른 페이지로 리디렉션
-        flash('회원 정보가 성공적으로 수정되었습니다.', 'success')
-        return redirect(url_for('user_dashboard'))  # 수정된 회원 정보를 대시보드에서 확인
-
-    return render_template('update_profile.html', user=user)
+    return render_template('user/update_profile.html', user=user)
 
 ##로그인 후 소개페이지
-@app.route('/user_dashboard/about/<userid>')
+@app.route('/user/dashboard/about')
 @login_required
-def user_dashboard_about(userid):
-    user=manager.get_user_by_id(userid)
-    return render_template('about.html', user=user)
+def user_dashboard_about():
+    return render_template('user/about.html')
 
-
-##로그인 후 도로CCTV 페이지
-@app.route('/user/dashboard/road/<userid>', methods=['GET'])
+##회원 페이지 CCTV보기
+#로그인 후 도로CCTV 페이지
+@app.route('/user/dashboard/road', methods=['GET'])
 @login_required
-def user_dashboard_road(userid):
-    user = manager.get_user_by_id(userid)
+def user_dashboard_road():
     search_query = request.args.get("search_query", "").strip()
     search_type = request.args.get("search_type", "all")  # 기본값은 'all'
     page = request.args.get("page", 1, type=int)
@@ -317,7 +330,7 @@ def user_dashboard_road(userid):
     next_page = page + 1 if page < total_pages else None
 
     return render_template(
-        "user_dashboard_road.html",
+        "user/road_cctv.html",
         street_lights=street_lights,
         search_query=search_query,
         search_type=search_type,
@@ -327,21 +340,17 @@ def user_dashboard_road(userid):
         total_pages=total_pages,
         prev_page=prev_page,
         next_page=next_page,
-        user=user
     )
 
-##로그인 후 인도CCTV 페이지
-@app.route('/user/dashboard/sidewalk/<userid>', methods=['GET'])
+#로그인 후 인도CCTV 페이지
+@app.route('/user/dashboard/sidewalk', methods=['GET'])
 @login_required
-def user_dashboard_sidewalk(userid):
-    user = manager.get_user_by_id(userid)
+def user_dashboard_sidewalk():
     search_query = request.args.get("search_query", "").strip()
     search_type = request.args.get("search_type", "all")  # 기본값은 'all'
     page = request.args.get("page", 1, type=int)
     per_page = 10
     offset = (page - 1) * per_page
-
-    
     if search_type == "all":
         search_query = ""
     # SQL 쿼리 및 파라미터 가져오기
@@ -360,7 +369,7 @@ def user_dashboard_sidewalk(userid):
     next_page = page + 1 if page < total_pages else None
 
     return render_template(
-        "user_dashboard_sidewalk.html",
+        "user/sidewalk_cctv.html",
         street_lights=street_lights,
         search_query=search_query,
         search_type=search_type,
@@ -370,16 +379,14 @@ def user_dashboard_sidewalk(userid):
         total_pages=total_pages,
         prev_page=prev_page,
         next_page=next_page,
-        user = user
     )
 
 #회원용 상세보기 라우트
-@app.route('/user_dashboard/cctv/<userid>/<int:street_light_id>')
+@app.route('/user_dashboard/cctv/<int:street_light_id>')
 @login_required
-def user_dashboard_cctv(userid,street_light_id):
-    user = manager.get_user_by_info(userid)
+def user_dashboard_cctv(street_light_id):
     camera = manager.get_camera_by_info(street_light_id)
-    return render_template('user_dashboard_cctv.html', user=user, camera=camera)
+    return render_template('user_dashboard_cctv.html', camera=camera)
 
 
 # 관리자용 상세보기 라우트
@@ -463,7 +470,6 @@ def search_account():
 
         if search_type == "id":
             userid = manager.get_user_id_by_name_regnumber(username, regnumber)
-            print(userid)
             return render_template('search_account.html', userid=userid, search_type=search_type )
 
         elif search_type == "password":
@@ -499,21 +505,52 @@ def logout():
 
 
 ### 관리자 페이지
+## HOME
 @app.route('/admin_dashboard')
 @admin_required  # 관리자만 접근 가능
 def admin_dashboard():
-    adminid = session['admin_id']
-    admin = manager.get_admin_by_id(adminid)
-    return render_template('admin_dashboard.html', admin=admin)  # 관리자 대시보드 렌더링
+    adminid = session.get('admin_id')
+    return render_template('admin/dashboard.html', adminid=adminid)  # 관리자 대시보드 렌더링
 
-@app.route("/lamp_check/<userid>")
-def lamp_check(userid):
-    return render_template("lamp_check.html")
 
-@app.route("/load_car/<userid>")
-def load_car(userid):
-    return render_template("load_car.html", stream_url=road_url)
+## CCTV보기
+#도로용 CCTV보기
+@app.route("/admin/road_cctv")
+@admin_required
+def admin_road_cctv():
+    adminid =session.get('admin_id')
+    return render_template("admin/road_cctv.html", stream_url=road_url, adminid=adminid)
 
+#인도용 CCTV보기
+@app.route("/admin/sidewalk_cctv")
+@admin_required
+def admin_sidewalk_cctv():
+    adminid =session.get('admin_id')
+    return render_template("admin/sidewalk_cctv.html", adminid=adminid)
+
+
+## 가로등
+#전체 가로등 조회
+@app.route("/admin/lamp_check")
+@admin_required
+def admin_lamp_check():
+    adminid =session.get('admin_id')
+    return render_template("admin/lamp_check.html", adminid = adminid)
+
+##불법단속
+#자동차(도로) 단속
+@app.route("/admin/load_car")
+@admin_required
+def admin_load_car():
+    adminid =session.get('admin_id')
+    return render_template("admin/road_car.html", stream_url=road_url, adminid=adminid)
+
+#오토바이(인도) 단속
+@app.route("/admin/sidewalk_motorcycle")
+@admin_required
+def admin_sidewalk_motorcycle():
+    adminid = session.get('admin_id')
+    return render_template("admin/sidewalk_motorcycle.html", adminid=adminid)
 # # YOLO 분석된 영상 스트리밍
 # @app.route("/processed_video_feed")
 # def processed_video_feed():
@@ -549,10 +586,6 @@ def load_car(userid):
     
 #     return jsonify(response_data)
 
-@app.route("/sidewalk_motorcycle/<userid>")
-def sidewalk_motorcycle(userid):
-    return render_template("sidewalk_motorcycle.html")
-
 
 # # ✅ ESP32-CAM에서 감지된 오토바이 영상 제공
 # @app.route("/video_feed")
@@ -568,24 +601,21 @@ def sidewalk_motorcycle(userid):
 #     return jsonify(motorcycle.get_alert_status())
 
 
-## 기능소개 페이지
-
-
 ##관리자 페이지에서 문의정보 보기
 ##문의된 정보 보기
-@app.route('/admin/admin_management_posts')
+@app.route('/admin/inquiries_view')
 @admin_required
-def admin_management_posts():
-    return render_template("admin_management_posts.html")
+def admin_inquiries_view():
+    adminid = session.get('admin_id')
+    return render_template("admin/inquiries_view.html", adminid=adminid)
 
 
-##회원 문의 정보 보기
-@app.route('/admin/admin_list_posts_member')
+##답변완료된 문의정보 보기
+@app.route('/admin/inquries_completed')
 @admin_required
-def admin_list_posts_member():
-    posts = manager.get_enquired_posts_member()
-    number = len(posts)
-    return render_template("admin_list_posts_member.html", posts=posts, number=number)
+def admin_inquries_completed():
+    adminid = session.get('admin_id')
+    return render_template("admin/inquiries_completed.html", adminid=adminid)
 
 
 ## 답변상태 변환하기 

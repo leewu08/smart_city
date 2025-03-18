@@ -155,15 +155,15 @@ class DBManager:
             self.disconnect()
     
     # 회원 비밀번호 변경
-    def update_user_password(self, id, password):
+    def update_user_password(self, userid, password):
         try:
             self.connect()  # DB 연결
             sql= """
                 UPDATE users
-                SET password = %s, password_last_updated = CURRENT_TIMESTAMP
+                SET password = %s, password_last_updated = CURRENT_TIMESTAMP, security_status = 0
                 WHERE user_id = %s
                 """
-            values = (password, id)
+            values = (password, userid)
             self.cursor.execute(sql, values)
             self.connection.commit()  # 모든 데이터 가져오기
             print("회원 비밀번호가 수정되었습니다.")

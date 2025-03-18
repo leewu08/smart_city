@@ -38,8 +38,12 @@
     </div>
     {% if search_type == 'password' %}
     <div class="result">
+        {% if not password  %}
+        <p>일치하는 회원님의 정보가 없습니다.</p>
+        {% else %}
         <p>회원님의 비밀번호는 {{ password }} 입니다.</p>
         <a href="{{ url_for('edit_password', userid=userid )}}">비밀번호를 바꾸시려면 여기를 눌러주세요</a>
+        {% endif %}
     </div>
     {% endif %}
     {% if search_type == 'id' %}

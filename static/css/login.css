@@ -28,7 +28,7 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    min-height: calc(100vh - 200px);
+    min-height: calc(100vh - 350px);
     background-color: var(--background-color);
 }
 

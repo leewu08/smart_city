@@ -1,52 +1,60 @@
-from flask import Flask, request, jsonify, render_template
+from flask import Flask, request, render_template, jsonify
 
 app = Flask(__name__)
-  # 올바른 Flask 인스턴스 생성
 
-# 현재 LED 상태 저장
-led_state = {'LED1': 'OFF', 'LED2': 'OFF', 'AUTO_MODE1': False, 'AUTO_MODE2': False}
-
-@app.route('/control_led', methods=['POST'])
-def control_led():
-    """ 아두이노가 LED 상태를 가져가기 위한 API """
-    data = request.json
-    device_id = data.get('ID')  # 제어할 아두이노 ID
-
-    if device_id == "1":
-        return jsonify({'LED1': led_state['LED1'], 'AUTO_MODE1': led_state['AUTO_MODE1']})
-    elif device_id == "2":
-        return jsonify({'LED2': led_state['LED2'], 'AUTO_MODE2': led_state['AUTO_MODE2']})
-
-    return jsonify({'error': 'Invalid device ID'}), 400
-
-@app.route('/set_led', methods=['POST'])
-def set_led():
-    """ 웹에서 LED 상태를 변경하는 API """
-    data = request.json
-    action = data.get('action')  # 'LED_ON', 'LED_OFF', 'AUTO_MODE'
-    device_id = data.get('ID')
-
-    if device_id == "1":
-        if action == "LED_ON":
-            led_state['LED1'] = 'ON'
-        elif action == "LED_OFF":
-            led_state['LED1'] = 'OFF'
-        elif action == "AUTO_MODE":
-            led_state['AUTO_MODE1'] = not led_state['AUTO_MODE1']
-
-    elif device_id == "2":
-        if action == "LED_ON":
-            led_state['LED2'] = 'ON'
-        elif action == "LED_OFF":
-            led_state['LED2'] = 'OFF'
-        elif action == "AUTO_MODE":
-            led_state['AUTO_MODE2'] = not led_state['AUTO_MODE2']
-
-    return jsonify({'status': 'success', 'led_state': led_state})
+# 각 아두이노의 최근 명령을 저장하는 딕셔너리
+command_cache = {
+    "arduino1": {"target": "arduino1", "cmd": None},
+    "arduino2": {"target": "arduino2", "cmd": None}
+}
 
 @app.route('/')
 def index():
-    return render_template("LedControl.html")  # 'templates' 폴더에 있어야 함
+    """웹 페이지에서 현재 명령을 확인하는 HTML 페이지 렌더링"""
+    return render_template("LedControl.html", command_cache=command_cache)
 
-if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5010, debug=True)
+@app.route('/command', methods=['GET'])
+def command():
+    """
+    아두이노 또는 앱 인벤터에서 현재 명령을 가져가는 엔드포인트.
+    아두이노가 한 번 요청하면 이후 값이 None으로 초기화됨.
+    예: http://<server-ip>:5010/command?target=arduino1
+    """
+    target = request.args.get('target')
+    
+    if target not in command_cache:
+        return jsonify({"status": "error", "message": "Invalid target"}), 400
+
+    response = jsonify(command_cache[target])
+
+    # **아두이노가 가져간 후 명령 초기화 (중복 방지)**
+    command_cache[target]["cmd"] = None
+
+    return response
+
+@app.route('/set_command', methods=['GET'])
+def set_command():
+    """
+    웹에서 명령을 설정하는 엔드포인트.
+    예: http://<server-ip>:5010/set_command?target=arduino1&cmd=LED_ON
+    """
+    target = request.args.get('target')
+    cmd = request.args.get('cmd')
+
+    if target not in command_cache:
+        return jsonify({"status": "error", "message": "Invalid target"}), 400
+
+    # 웹 명령을 `_WEB` 접미어 추가하여 처리
+    if cmd in ["LED_ON", "LED_OFF", "AUTO_MODE"]:
+        cmd = f"{cmd}_WEB"
+
+    # 기존 명령과 동일하면 다시 보내지 않음 (중복 방지)
+    if command_cache[target]["cmd"] == cmd:
+        return jsonify({"status": "no_change", "command": cmd})
+
+    # 새로운 명령 저장
+    command_cache[target]["cmd"] = cmd
+    return jsonify({"status": "ok", "command": cmd})
+
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=5010, debug=True)

@@ -21,7 +21,7 @@
     </div>
     <div class="right-nav">
         <span class="welcome-text">{{ session['user_name'] }} 님 환영합니다</span>
-        <a href="{{ url_for('update_profile', userid=session['user_id']) }}" class="btn btn-primary">
+        <a href="{{ url_for('user_update_profile') }}" class="btn btn-primary">
             <i class="fas fa-user-edit"></i> 회원정보 수정
         </a>
         <a href="{{ url_for('logout') }}" class="btn btn-secondary">
@@ -35,9 +35,6 @@
     </div>
     <div class="right-nav">
         <span class="welcome-text">{{ session['admin_name'] }} 님 환영합니다</span>
-        <a href="{{ url_for('update_profile', userid=session['user_id']) }}" class="btn btn-primary">
-            <i class="fas fa-user-edit"></i> 회원정보 수정
-        </a>
         <a href="{{ url_for('logout') }}" class="btn btn-secondary">
             <i class="fas fa-sign-out-alt"></i> 로그아웃
         </a>
@@ -60,8 +57,8 @@
     {% if 'user_id' in session %}
     <nav class="header-nav">
         <div class="nav-menu">
-            <a href="{{ url_for('user_dashboard', userid=session['user_id']) }}" class="nav-link">HOME</a>
-            <a href="{{ url_for('user_dashboard_about', userid=session['user_id']) }}" class="nav-link">소개</a>
+            <a href="{{ url_for('user_dashboard') }}" class="nav-link">HOME</a>
+            <a href="{{ url_for('user_dashboard_about') }}" class="nav-link">소개</a>
             <a href="#" class="nav-link">CCTV 보기</a>
             <a href="#" class="nav-link">문의</a>
         </div>
@@ -71,8 +68,8 @@
             <div class="dropdown-content">
             </div>
             <div class="dropdown-content">
-                <a href="{{ url_for('user_dashboard_road', userid=session['user_id']) }}">도로용 CCTV 보기</a>
-                <a href="{{ url_for('user_dashboard_sidewalk', userid=session['user_id']) }}">인도용 CCTV 보기 </a>
+                <a href="{{ url_for('user_dashboard_road') }}">도로용 CCTV 보기</a>
+                <a href="{{ url_for('user_dashboard_sidewalk') }}">인도용 CCTV 보기 </a>
             </div>
             <div class="dropdown-content">
                 <a href="{{ url_for('user_dashboard_inquiries_view', userid=session['user_id']) }}">문의 보기</a>
@@ -83,7 +80,7 @@
     {% elif 'admin_id' in session %}
     <nav class="header-nav">
         <div class="nav-menu">
-            <a href="{{ url_for('admin_dashboard', userid=session['admin_id']) }}" class="nav-link">Home</a>
+            <a href="{{ url_for('admin_dashboard', adminid=session['admin_id']) }}" class="nav-link">Home</a>
             <a href="#" class="nav-link">CCTV 보기</a>
             <a href="#" class="nav-link">가로등</a>
             <a href="#" class="nav-link">불법 단속 모니터</a>
@@ -95,19 +92,19 @@
             <div class="dropdown-content">
             </div>
             <div class="dropdown-content">
-                <a href="{{ url_for('user_dashboard_road', userid=session['admin_id']) }}">도로용 CCTV 보기</a>
-                <a href="{{ url_for('user_dashboard_sidewalk', userid=session['admin_id']) }}">인도용 CCTV 보기 </a>
+                <a href="{{ url_for('admin_road_cctv') }}">도로용 CCTV 보기</a>
+                <a href="{{ url_for('admin_sidewalk_cctv') }}">인도용 CCTV 보기 </a>
             </div>
             <div class="dropdown-content">
-                <a href="{{ url_for('lamp_check', userid=session['admin_id']) }}">전체 가로등</a>
+                <a href="{{ url_for('admin_lamp_check')  }}">전체 가로등</a>
             </div>
             <div class="dropdown-content">
-                <a href="{{ url_for('load_car', userid=session['admin_id']) }}">자동차(도로)</a>
-                <a href="{{ url_for('sidewalk_motorcycle', userid=session['admin_id']) }}">오토바이(인도)</a>
+                <a href="{{ url_for('admin_load_car') }}">자동차(도로)</a>
+                <a href="{{ url_for('admin_sidewalk_motorcycle') }}">오토바이(인도)</a>
             </div>
             <div class="dropdown-content">
-                <a href="{{ url_for('user_dashboard_inquiries_view', userid=session['admin_id']) }}">문의 전체</a>
-                <a href="{{ url_for('user_dashboard_inquiries', userid=session['admin_id']) }}">문의 완료</a>
+                <a href="{{ url_for('admin_inquiries_view') }}">문의 전체</a>
+                <a href="{{ url_for('admin_inquries_completed') }}">문의 완료</a>
             </div>
         </div>
     </nav>
@@ -145,6 +142,7 @@
             <p>프로젝트 이름: 스마트 도시 프로젝트</p>
             <p>프로젝트 팀장: 신준혁</p>
             <p>프로젝트 팀원: 황수용, 이지엽, 손유빈</p>
+            <p>email : admin@gmail.com</p>
         </div>
         
         <div class="footer-right">

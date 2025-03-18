@@ -10,7 +10,7 @@
         <i class="fa-solid fa-lightbulb" style="color: rgb(236, 119, 9);"></i>
         <span class="total-count">검색된 가로등 : {{ total_posts }}개</span>
     </div>
-    <form method="get" action="{{ url_for('user_dashboard_road', userid=user.user_id) }}">
+    <form method="get" action="{{ url_for('user_dashboard_road') }}">
         <label for="search_type">검색 타입:</label>
         <select name="search_type" id="search_type">
             <option value="street_light_id" {% if search_type == 'street_light_id' %}selected{% endif %}>가로등 번호</option>
@@ -41,7 +41,7 @@
                 <td>{{ street_light.location }}</td>
                 {% if street_light.cctv_ip %}
                 <td>
-                    <a href="{{ url_for('user_dashboard_cctv', userid=user.user_id, street_light_id = street_light.street_light_id) }}" class="btn btn-primary">
+                    <a href="{{ url_for('user_dashboard_cctv', street_light_id = street_light.street_light_id) }}" class="btn btn-primary">
                         상세 보기
                     </a>
                     <i class="fa-solid fa-video fa-2x"></i> <!-- 일반적인 CCTV 아이콘 -->
@@ -76,11 +76,11 @@
 <!-- 페이지네이션 -->
 <div class="pagination">
     {% if prev_page %}
-        <a href="{{ url_for('user_dashboard_road', userid=user.user_id, search_query=search_query, search_type=search_type, page=prev_page) }}">이전</a>
+        <a href="{{ url_for('user_dashboard_road', search_query=search_query, search_type=search_type, page=prev_page) }}">이전</a>
     {% endif %}
     <span>페이지 {{ page }} / {{ total_pages }}</span>
     {% if next_page %}
-        <a href="{{ url_for('user_dashboard_road', userid=user.user_id, search_query=search_query, search_type=search_type, page=next_page) }}">다음</a>
+        <a href="{{ url_for('user_dashboard_road', search_query=search_query, search_type=search_type, page=next_page) }}">다음</a>
     {% endif %}
 </div>
 {% endblock %}
