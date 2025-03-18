@@ -479,7 +479,8 @@ class DBManager:
             sql="""
                 SELECT *, u.user_id, u.user_name 
                 FROM inquiries i
-                JOIN users u ON i.user_id = u.user_id;
+                JOIN users u ON i.user_id = u.user_id
+                order by i.inquiries_id desc;
                 """
             self.cursor.execute(sql)
             return self.cursor.fetchall()

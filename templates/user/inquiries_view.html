@@ -28,12 +28,12 @@
     <tbody>
         {% for post in posts %}
         <tr>
-            <td>{{ loop.index }}</td>
+            <td>{{ loop.revindex }}</td>
             <td>{{ post.user_name }}</td>
             <td>{{ post.inquiry_reason }}</td>
             <td>
-                {% if user.user_id == post.user_id %}
-                <form action="{{ url_for('user_dashboard_inquiries_view', userid=post.user_id) }}" method="POST">
+                {% if session['user_id'] == post.user_id %}
+                <form action="{{ url_for('user_dashboard_inquiries_view') }}" method="POST">
                     <input type="hidden" name="inquiries_id" value="{{ post.inquiries_id }}">
                     <button type="submit" class="detail-button">내용보기</button>
                 </form>

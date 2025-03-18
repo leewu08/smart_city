@@ -88,25 +88,10 @@ def handle_request():
     return jsonify(received_data)
 
 
-### 푸터에 들어갈 날짜데이터 (context_processor 사용)
-@app.context_processor
-def inject_full_date():
-    weekdays = ["월요일", "화요일", "수요일", "목요일", "금요일", "토요일", "일요일"]
-    today_date = datetime.now()
-    today = today_date.strftime("%Y년 %m월 %d일")
-    weekday = weekdays[today_date.weekday()]
-    full_date = f"{today} ({weekday})"
-    return {"full_date": full_date}
-
 ### 홈페이지
 @app.route('/')
 def index():
-    return render_template('index.html')
-
-# 홈페이지에서 소개 페이지
-@app.route('/index_about')
-def index_about():
-    return render_template('about.html')
+    return render_template('public/index.html')
 
 ### 회원가입 페이지등록 
 #회원가입
@@ -125,16 +110,16 @@ def register():
         #회원과 아이디가 중복되는지 확인
         if manager.duplicate_users(user_id):
             flash('이미 존재하는 아이디 입니다.', 'error')
-            return render_template('register.html')
+            return render_template('public/register.html')
         
         #회원 이메일과 중복여부
         if manager.duplicate_email(email):
             flash('이미 등록된 이메일 입니다.', 'error')
-            return render_template('register.html')
+            return render_template('public/register.html')
         
         if manager.duplicate_reg_number(reg_number):
             flash('이미 등록된 주민번호 입니다.', 'error')
-            return render_template('register.html')
+            return render_template('public/register.html')
 
 
         if manager.register_users(user_id, user_name, password, email, address, birthday, reg_number, gender):
@@ -143,17 +128,17 @@ def register():
         
         flash('회원가입에 실패했습니다.', 'error')
         return redirect(url_for('register'))
-    return render_template('register.html')
+    return render_template('public/register.html')
 
 # 이용약관 페이지
-@app.route('/terms_of_service')
+@app.route('/register/terms_of_service')
 def terms_of_service():
-    return render_template('terms_of_service.html')
+    return render_template('public/terms_of_service.html')
 
 # 개인정보 처리방침
-@app.route('/privacy_policy')
+@app.route('/register/privacy_policy')
 def privacy_policy():
-    return render_template('privacy_policy.html')
+    return render_template('public/privacy_policy.html')
 
 
 ### 로그인 기능
@@ -226,7 +211,7 @@ def login():
             flash("존재하지 않는 아이디입니다.", 'error')
             return redirect(url_for('login'))  # 로그인 폼 다시 렌더링
 
-    return render_template('login.html')  # GET 요청 시 로그인 폼 보여주기
+    return render_template('public/login.html')  # GET 요청 시 로그인 폼 보여주기
 
 @app.route('/need_login')
 def need_login():
@@ -389,17 +374,15 @@ def user_dashboard_cctv(street_light_id):
     return render_template('user/view_cctv.html', camera=camera)
 
 
-#회원페이지 문의하기
-@app.route('/user_dashboard/inquiries/<userid>', methods=['GET','POST'])
+#회원용 문의하기
+@app.route('/user/inquiries', methods=['GET','POST'])
 @login_required
-def user_dashboard_inquiries(userid):
+def user_dashboard_inquiries():
+    userid = session['user_id']
     if request.method == 'GET':
-        user = manager.get_user_by_id(userid)
-        return render_template("user_dashboard_inquiries.html", user=user)
+        return render_template("user/inquiries.html")
     
     if request.method == 'POST':
-        user = manager.get_user_by_id(userid)
-        userid = user['user_id']
         file = request.files['file']
         filename = file.filename if file else None
         # 파일이 있으면 저장
@@ -409,22 +392,20 @@ def user_dashboard_inquiries(userid):
         detail_reason = request.form.get('message')
         manager.add_inquire_user(userid, filename, inquiry_reason, detail_reason)
         flash("문의하기가 관리자에게 전달되었습니다.", 'success')
-        return redirect(url_for('user_dashboard', user=user))
+        return redirect(url_for('user_dashboard'))
     
-#문의된 정보 보기
-@app.route('/user_dashboard/inquiries_view/<userid>', methods=['GET','POST'])
+#회원 문의된 정보 보기
+@app.route('/user/inquiries_view', methods=['GET','POST'])
 @login_required
-def user_dashboard_inquiries_view(userid):
+def user_dashboard_inquiries_view():
     if request.method == 'GET':
-        user =manager.get_user_by_id(userid)
         posts = manager.get_posts_info()
-        return render_template('user_dashboard_inquiries_view.html',user=user, posts=posts)  
+        return render_template('user/inquiries_view.html', posts=posts)  
     
     if request.method == 'POST':
-        user = manager.get_user_by_id(userid)
         inquiries_id = request.form.get('inquiries_id')
         posts = manager.get_inquiry_by_info(inquiries_id)
-        return render_template('user_dashboard_inquiry_detail.html', user=user, posts=posts)
+        return render_template('user/inquiry_detail.html', posts=posts)
 
 
 #회원탈퇴

@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+
+{% block title %}홈페이지{% endblock %}
+
+{% block header %}
+<button id="dark-mode-toggle" class="btn btn-secondary">다크모드</button>
+    <div class="logo-container">
+        <img src="{{ url_for('static', filename='images/logo.png') }}" alt="팀 로고" class="logo">
+    </div>
+    <div class="right-nav">
+        <a href="{{ url_for('login') }}" class="btn btn-primary me-2">
+            <i class="fas fa-sign-in-alt"></i> 로그인
+        </a>
+        <a href="{{ url_for('register') }}" class="btn btn-warning" style="margin-right: 20px;">
+            <i class="fas fa-user-plus"></i> 회원가입
+        </a>
+    </div>
+{% endblock %}
+
+{% block content %}
+<main class="content-area">
+    <div class="swiper-container">
+        <div class="swiper-wrapper">
+            <div class="swiper-slide">
+                <img src="{{ url_for('static', filename='images/image1.png') }}" alt="이미지 1">
+            </div>
+            <div class="swiper-slide">
+                <img src="{{ url_for('static', filename='images/image2.png') }}" alt="이미지 2">
+            </div>
+            <div class="swiper-slide">
+                <img src="{{ url_for('static', filename='images/image3.png') }}" alt="이미지 3">
+            </div>
+        </div>
+        <div class="swiper-button-prev"></div>
+        <div class="swiper-button-next"></div>
+        <div class="swiper-pagination"></div>
+    </div>
+
+</main>
+{% endblock %}

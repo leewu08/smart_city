@@ -14,7 +14,7 @@
 {% block content %}
 <div class="inquiries-container">
     <h2 class="text-center mb-4">문의하기</h2>
-    <form method="POST" action="{{ url_for('user_dashboard_inquiries', userid=user.user_id) }}" enctype="multipart/form-data">
+    <form method="POST" action="{{ url_for('user_dashboard_inquiries') }}" enctype="multipart/form-data">
         <div class="form-group">
             <label for="inquiry_type">문의 유형</label>
             <select class="form-control" id="inquiry_type" name="inquiry_type" required>
