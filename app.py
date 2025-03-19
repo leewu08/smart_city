@@ -87,6 +87,18 @@ def handle_request():
     # GET 요청 시 현재 데이터를 반환
     return jsonify(received_data)
 
+#데이터베이스에 센서값 저장
+@app.route("/sensor", methods=["POST"])
+def receive_sensor_data():
+    sensor_data = request.get_json()  # JSON 데이터 받기
+    if not sensor_data:
+        return jsonify({"status": "error", "message": "No data received"}), 400
+
+    manager.save_sensor_data(sensor_data)
+    return jsonify({"status": "success", "message": "Sensor data processed"})  # 성공 메시지 반환
+
+
+
 
 ### 홈페이지
 @app.route('/')
@@ -622,8 +634,6 @@ def admin_view_posts_member(userid):
 def capture_file(filename):
     return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
 
-
-#데이터베이스에 센서값 저장
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5010, debug=True)
