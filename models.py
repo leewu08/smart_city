@@ -590,5 +590,105 @@ class DBManager:
         finally:
             self.disconnect()
     
+    ## 가로등 센서 데이터 DB저장
+    #센서 테이블 최근 데이터 가져오기 
+    def get_latest_sensor_data(self, table_name, street_light_id):
+        try:
+            self.connect() 
+            # ✅ 허용된 테이블 이름만 사용
+            allowed_tables = ["road_sensors", "sidewalk_sensors"]
+            if table_name not in allowed_tables:
+                raise ValueError("❌ 허용되지 않은 테이블 이름입니다!")
+            
+            sql = """SELECT * FROM {} 
+                    WHERE street_light_id = %s ORDER BY record_time DESC LIMIT 1
+                  """.format(table_name)
+            value = (street_light_id,)
+            self.cursor.execute(sql,value)
+            return self.cursor.fetchone()
+        except Exception as error:
+            print(f"센서 테이블 최근 데이터 가져오기 실패 : {error}")
+            return False
+        finally:
+            self.disconnect()
+            
+    # 센서 데이터 DB저장
+    def save_sensor_data(self, received_data):
+        if "ID" not in received_data:
+            print("🚨 ID 없음: 데이터 저장 안 함")
+            return  
+        else :
+            street_light_id = int(received_data["ID"])
+            street_light = self.get_streetlight_by_info(street_light_id)
+            if not street_light or street_light_id != street_light['street_light_id']:
+                print("❌ 유효하지 않은 센서 ID")
+                return
+            
+        # 목적에 따라 테이블 선택
+        table_name = "road_sensors" if street_light['purpose'] == '도로' else "sidewalk_sensors"
+
+        # 최신 데이터 가져오기
+        latest_data = self.get_latest_sensor_data(table_name, street_light_id)
+
+        # 새로운 값과 비교하여 변화 확인
+        sensor_columns = ["TILT Value", "MAIN LDR Value", "Temperature", "Humidity", "Switch State"]
+        if table_name == "road_sensors":
+            sensor_columns.extend(["SUB1 LDR Value", "SUB2 LDR Value"])
+        
+        if latest_data:
+            is_changed = any(
+                str(latest_data.get(col, "")) != str(received_data.get(col, ""))
+                for col in sensor_columns if col in received_data
+            )
+            if not is_changed:
+                print("⚡ 변화 없음 → 저장 안 함")
+                return
+
+        # 변화가 있으면 데이터 저장
+        try:
+            self.connect()
+            if table_name == "road_sensors":
+                sql = f"""
+                INSERT INTO {table_name} 
+                (street_light_id, main_light_level, sub1_light_level_, sub2_light_level_, tilt_angle, temperature, humidity, perceived_temperatuere, switch_state)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+                """
+                values = (
+                    street_light_id,
+                    int(received_data.get("MAIN LDR Value", 0)),
+                    int(received_data.get("SUB1 LDR Value", 0)),
+                    int(received_data.get("SUB2 LDR Value", 0)),
+                    int(received_data.get("TILT Value", 0)),
+                    received_data.get("Temperature", "0"),
+                    received_data.get("Humidity", "0"),
+                    received_data.get("Heat Index", "0"),
+                    int(received_data.get("Switch State", 0)),
+                )
+            else:  # sidewalk_sensors
+                sql = f"""
+                INSERT INTO {table_name} 
+                (street_light_id, main_light_level, sub1_light_level_, sub2_light_level_, tilt_angle, switch_state)
+                VALUES (%s, %s, %s, %s, %s, %s)
+                """
+                values = (
+                    street_light_id,
+                    int(received_data.get("MAIN LDR Value", 0)),
+                    int(received_data.get("SUB1 LDR Value", 0)),
+                    int(received_data.get("SUB2 LDR Value", 0)),
+                    int(received_data.get("TILT Value", 0)),
+                    int(received_data.get("Switch State", 0)),
+                )
+
+            self.cursor.execute(sql, values)
+            self.connection.commit()
+            print(f"✅ 데이터 저장 완료 → {table_name} (ID: {street_light_id})")
+            return True
+        except Exception as error:
+            print(f"❌ 센서 테이블 데이터 저장 실패: {error}")
+            return False
+
+        finally:
+            self.disconnect()
+
     
     

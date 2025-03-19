@@ -7,10 +7,10 @@ from models import DBManager
 from markupsafe import Markup
 import json
 import re
-import threading
-import license_plate
-import cv2
-import motorcycle
+# import threading
+# import license_plate
+# import cv2
+# import motorcycle
 
 from api import handle_request  # api.py에서 handle_request 함수 불러오기
 ## sy branch
@@ -81,23 +81,12 @@ def handle_request():
 
         received_data = data_dict
         print(f"📩 변환된 데이터: {received_data}")  # 터미널에서 확인
+        manager.save_sensor_data(received_data)
 
         return jsonify(received_data)
 
     # GET 요청 시 현재 데이터를 반환
     return jsonify(received_data)
-
-#데이터베이스에 센서값 저장
-@app.route("/sensor", methods=["POST"])
-def receive_sensor_data():
-    sensor_data = request.get_json()  # JSON 데이터 받기
-    if not sensor_data:
-        return jsonify({"status": "error", "message": "No data received"}), 400
-
-    manager.save_sensor_data(sensor_data)
-    return jsonify({"status": "success", "message": "Sensor data processed"})  # 성공 메시지 반환
-
-
 
 
 ### 홈페이지
@@ -460,7 +449,7 @@ def search_account():
 
         if search_type == "id":
             userid = manager.get_user_id_by_name_regnumber(username, regnumber)
-            return render_template('search_account.html', userid=userid, search_type=search_type )
+            return render_template('public/search_account.html', userid=userid, search_type=search_type )
 
         elif search_type == "password":
             userid = request.form.get('userid')
@@ -470,8 +459,8 @@ def search_account():
             if password_data: 
                 raw_password = password_data['password']  # 딕셔너리에서 비밀번호 값 가져오기
                 password = raw_password[:4] + '*' * (len(raw_password) - 4)  # 앞 4자리만 표시, 나머지는 '*'
-            return render_template('search_account.html', password = password, userid=userid, search_type=search_type)
-    return render_template('search_account.html')
+            return render_template('public/search_account.html', password = password, userid=userid, search_type=search_type)
+    return render_template('public/search_account.html')
 
 #계정찾기 이후 새비밀번호 업데이트
 @app.route('/index/search_account/edit_password/<userid>', methods=['GET','POST'])
@@ -546,54 +535,54 @@ def admin_sidewalk_motorcycle():
     adminid = session.get('admin_id')
     return render_template("admin/sidewalk_motorcycle.html", adminid=adminid)
 
-# YOLO 분석된 영상 스트리밍
-@app.route("/processed_video_feed")
-def processed_video_feed():
-    """YOLOv8로 감지된 영상 스트리밍"""
-    def generate():
-        while True:
-            with license_plate.lock:
-                if license_plate.frame is None:
-                    continue
-                img = license_plate.frame.copy()
+# # YOLO 분석된 영상 스트리밍
+# @app.route("/processed_video_feed")
+# def processed_video_feed():
+#     """YOLOv8로 감지된 영상 스트리밍"""
+#     def generate():
+#         while True:
+#             with license_plate.lock:
+#                 if license_plate.frame is None:
+#                     continue
+#                 img = license_plate.frame.copy()
 
-            results = license_plate.model(img)
-            for result in results:
-                boxes = result.boxes.xyxy.cpu().numpy()
-                for box in boxes:
-                    x1, y1, x2, y2 = map(int, box)
-                    cv2.rectangle(img, (x1, y1), (x2, y2), (0, 255, 0), 2)
+#             results = license_plate.model(img)
+#             for result in results:
+#                 boxes = result.boxes.xyxy.cpu().numpy()
+#                 for box in boxes:
+#                     x1, y1, x2, y2 = map(int, box)
+#                     cv2.rectangle(img, (x1, y1), (x2, y2), (0, 255, 0), 2)
 
-            _, jpeg = cv2.imencode('.jpg', img)
-            yield (b'--frame\r\n'
-                   b'Content-Type: image/jpeg\r\n\r\n' + jpeg.tobytes() + b'\r\n')
+#             _, jpeg = cv2.imencode('.jpg', img)
+#             yield (b'--frame\r\n'
+#                    b'Content-Type: image/jpeg\r\n\r\n' + jpeg.tobytes() + b'\r\n')
 
-    return Response(generate(), mimetype='multipart/x-mixed-replace; boundary=frame')
+#     return Response(generate(), mimetype='multipart/x-mixed-replace; boundary=frame')
 
-# OCR 결과 API
-@app.route("/ocr_result", methods=["GET"])
-def get_ocr_result():
-    """OCR 결과 반환 API"""
-    response_data = {"license_plate": license_plate.ocr_result, "alert_message": license_plate.alert_message}
+# # OCR 결과 API
+# @app.route("/ocr_result", methods=["GET"])
+# def get_ocr_result():
+#     """OCR 결과 반환 API"""
+#     response_data = {"license_plate": license_plate.ocr_result, "alert_message": license_plate.alert_message}
 
-    if license_plate.alert_message:  # 알람 메시지가 있을 때만 초기화
-        license_plate.alert_message = ""  # 메시지를 한 번만 표시하도록 초기화
+#     if license_plate.alert_message:  # 알람 메시지가 있을 때만 초기화
+#         license_plate.alert_message = ""  # 메시지를 한 번만 표시하도록 초기화
     
-    return jsonify(response_data)
+#     return jsonify(response_data)
 
 
-# ✅ ESP32-CAM에서 감지된 오토바이 영상 제공
-@app.route("/video_feed")
-def video_feed():
-    """ESP32-CAM 스트리밍"""
-    return Response(motorcycle.get_video_frame(), mimetype="multipart/x-mixed-replace; boundary=frame")
+# # ✅ ESP32-CAM에서 감지된 오토바이 영상 제공
+# @app.route("/video_feed")
+# def video_feed():
+#     """ESP32-CAM 스트리밍"""
+#     return Response(motorcycle.get_video_frame(), mimetype="multipart/x-mixed-replace; boundary=frame")
 
 
-# ✅ 오토바이 감지 상태 API
-@app.route("/alert_status", methods=["GET"])
-def alert_status():
-    """오토바이 감지 상태 반환"""
-    return jsonify(motorcycle.get_alert_status())
+# # ✅ 오토바이 감지 상태 API
+# @app.route("/alert_status", methods=["GET"])
+# def alert_status():
+#     """오토바이 감지 상태 반환"""
+#     return jsonify(motorcycle.get_alert_status())
 
 
 ##관리자 페이지에서 문의정보 보기
