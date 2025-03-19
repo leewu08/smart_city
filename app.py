@@ -1,4 +1,4 @@
-from flask import Flask, session, url_for, render_template, flash, before_render_template, send_from_directory, jsonify ,request, redirect, Response
+from flask import Flask, session, url_for, render_template, flash, before_render_template, send_from_directory, jsonify, request, redirect, Response
 import os
 import requests
 from datetime import datetime, timedelta
@@ -223,7 +223,12 @@ def need_login():
 @app.route('/user/dashboard')
 @login_required
 def user_dashboard():
-    return render_template('user/dashboard.html') 
+    # 현재 로그인한 사용자 정보 가져오기
+    user_id = session.get('user_id')
+    user = manager.get_user_by_info(user_id)
+    
+    # user 객체를 템플릿에 전달
+    return render_template('user/dashboard.html', user=user)
 
 ##회원 정보 수정 
 @app.route('/user/dashboard/update_profile', methods=['GET', 'POST'])
@@ -627,4 +632,3 @@ def capture_file(filename):
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5010, debug=True)
-

@@ -4,22 +4,28 @@
 
 {% block extra_css %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/login.css') }}">
+{% endblock %}
 
-{% endblock %}
 {% block header %}
-<button id="dark-mode-toggle" class="btn btn-secondary">다크모드</button>
-    <div class="logo-container">
+<div class="toggle-container">
+  <span class="mode-text" id="mode-text">다크모드</span>
+  <div class="toggle-switch">
+    <input type="checkbox" id="dark-mode-toggle" class="toggle-input">
+    <label for="dark-mode-toggle" class="toggle-label"></label>
+  </div>
+</div>
+
+<div class="logo-container">
+    <a href="{{ url_for('index') }}">
         <img src="{{ url_for('static', filename='images/logo.png') }}" alt="팀 로고" class="logo">
-    </div>
-    <div class="right-nav">
-        <a href="{{ url_for('login') }}" class="btn btn-primary me-2">
-            <i class="fas fa-sign-in-alt"></i> 로그인
-        </a>
-        <a href="{{ url_for('register') }}" class="btn btn-warning" style="margin-right: 20px;">
-            <i class="fas fa-user-plus"></i> 회원가입
-        </a>
-    </div>
+        <img src="{{ url_for('static', filename='images/logo_darkmode.png') }}" alt="팀 로고 다크모드" class="logo-dark">
+    </a>
+</div>
+<div class="right-nav" style="margin-right: 60px;">
+    <!-- 로그인 페이지이므로 로그인/회원가입 버튼 제거 -->
+</div>
 {% endblock %}
+
 {% block content %}
 <div class="login-container">
     <div class="login-form">
@@ -31,7 +37,7 @@
             </div>
             <div class="form-group">
                 <label for="password">비밀번호</label>
-                <input type="password" id="password" name="password" lenmin="8" lenmax="12" required>
+                <input type="password" id="password" name="password" minlength="8" maxlength="12" required>
             </div>
             <button type="submit" class="btn-primary">로그인</button>
         </form>
@@ -42,6 +48,7 @@
     </div>
 </div>
 {% endblock %}
+
 {% block extra_js %}
 <script>
     function openSearchPopup() {
@@ -51,5 +58,7 @@
             "width=500,height=600,left=200,top=100"
         );
     }
+    
+    // 다크모드 토글 관련 스크립트는 base.html의 스크립트로 처리됨
 </script>
 {% endblock %}
