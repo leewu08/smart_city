@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="ko">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,39 +9,65 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper/swiper-bundle.min.css">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/base.css') }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        /* 인라인 스타일로 추가 - 버튼 위치 조정 */
+        .header .right-nav {
+            margin-right: 80px !important;
+        }
+        
+        /* 네비게이션 높이 증가 및 메뉴 중앙 정렬 */
+        .header-nav {
+            height: 65px !important;
+        }
+        
+        .nav-link {
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+    </style>
     {% block extra_css %}
     {% endblock %}
 </head>
+
 <body>
     <header class="header">
-    {% block header %}
-    {% if 'user_name' in session %}
-    <button id="dark-mode-toggle" class="btn btn-secondary">다크모드</button>
-    <div class="logo-container">
-        <img src="{{ url_for('static', filename='images/logo.png') }}" alt="팀 로고" class="logo">
-    </div>
-    <div class="right-nav">
-        <span class="welcome-text">{{ session['user_name'] }} 님 환영합니다</span>
-        <a href="{{ url_for('user_update_profile') }}" class="btn btn-primary">
-            <i class="fas fa-user-edit"></i> 회원정보 수정
-        </a>
-        <a href="{{ url_for('logout') }}" class="btn btn-secondary">
-            <i class="fas fa-sign-out-alt"></i> 로그아웃
-        </a>
-    </div>
-    {% elif 'admin_name' in session %}
-    <button id="dark-mode-toggle" class="btn btn-secondary">다크모드</button>
-    <div class="logo-container">
-        <img src="{{ url_for('static', filename='images/logo.png') }}" alt="팀 로고" class="logo">
-    </div>
-    <div class="right-nav">
-        <span class="welcome-text">{{ session['admin_name'] }} 님 환영합니다</span>
-        <a href="{{ url_for('logout') }}" class="btn btn-secondary">
-            <i class="fas fa-sign-out-alt"></i> 로그아웃
-        </a>
-    </div>
-    {% endif %}
-    {% endblock %}
+        {% block header %}
+        <div class="toggle-container">
+            <span class="mode-text" id="mode-text">다크모드</span>
+            <div class="toggle-switch">
+                <input type="checkbox" id="dark-mode-toggle" class="toggle-input">
+                <label for="dark-mode-toggle" class="toggle-label"></label>
+            </div>
+        </div>
+        <div class="logo-container">
+            <a href="{{ url_for('index') }}">
+                <img src="{{ url_for('static', filename='images/logo.png') }}" alt="팀 로고" class="logo">
+                <img src="{{ url_for('static', filename='images/logo_darkmode.png') }}" alt="팀 로고 다크모드" class="logo-dark">
+            </a>
+        </div>
+        {% if 'user_id' in session %}
+        <div class="right-nav" style="margin-right: 80px;">
+            <span class="welcome-text">{{ session.user_name }} 님 환영합니다</span>
+            <a href="{{ url_for('user_update_profile') }}" class="btn btn-primary">
+                <i class="fas fa-user-edit"></i> 회원정보 수정
+            </a>
+            <a href="{{ url_for('logout') }}" class="btn btn-secondary">
+                <i class="fas fa-sign-out-alt"></i> 로그아웃
+            </a>
+        </div>
+        {% else %}
+        <div class="right-nav" style="margin-right: 80px;">
+            <a href="{{ url_for('login') }}" class="btn btn-primary me-2">
+                <i class="fas fa-sign-in-alt"></i> 로그인
+            </a>
+            <a href="{{ url_for('register') }}" class="btn btn-warning">
+                <i class="fas fa-user-plus"></i> 회원가입
+            </a>
+        </div>
+        {% endif %}
+        {% endblock %}
     </header>
     {% with messages = get_flashed_messages(with_categories=true) %}
     {% if messages %}
@@ -57,77 +84,46 @@
     {% if 'user_id' in session %}
     <nav class="header-nav">
         <div class="nav-menu">
-            <a href="{{ url_for('user_dashboard') }}" class="nav-link">HOME</a>
+            <a href="{{ url_for('user_dashboard') }}" class="nav-link">홈</a>
             <a href="{{ url_for('user_dashboard_about') }}" class="nav-link">소개</a>
-            <a href="#" class="nav-link">CCTV 보기</a>
-            <a href="#" class="nav-link">문의</a>
-        </div>
-        <div class="dropdown-container">
-            <div class="dropdown-content">
+
+            <div class="menu-item">
+                <a href="#" class="nav-link nav-link-dropdown">CCTV</a>
+                <div class="dropdown-content" id="cctv-dropdown">
+                    <a href="{{ url_for('user_dashboard_road_cctv') }}">도로용 CCTV</a>
+                    <a href="{{ url_for('user_dashboard_sidewalk_cctv') }}">인도용 CCTV</a>
+                </div>
             </div>
-            <div class="dropdown-content">
-            </div>
-            <div class="dropdown-content">
-                <a href="{{ url_for('user_dashboard_road_cctv') }}">도로용 CCTV 보기</a>
-                <a href="{{ url_for('user_dashboard_sidewalk_cctv') }}">인도용 CCTV 보기 </a>
-            </div>
-            <div class="dropdown-content">
-                <a href="{{ url_for('user_dashboard_inquiries_view') }}">문의 보기</a>
-                <a href="{{ url_for('user_dashboard_inquiries') }}">문의 하기</a>
-            </div>
-        </div>
-    </nav>
-    {% elif 'admin_id' in session %}
-    <nav class="header-nav">
-        <div class="nav-menu">
-            <a href="{{ url_for('admin_dashboard', adminid=session['admin_id']) }}" class="nav-link">Home</a>
-            <a href="#" class="nav-link">CCTV 보기</a>
-            <a href="#" class="nav-link">가로등</a>
-            <a href="#" class="nav-link">불법 단속 모니터</a>
-            <a href="#" class="nav-link">문의</a>
-        </div>
-        <div class="dropdown-container">
-            <div class="dropdown-content">
-            </div>
-            <div class="dropdown-content">
-            </div>
-            <div class="dropdown-content">
-                <a href="{{ url_for('admin_road_cctv') }}">도로용 CCTV 보기</a>
-                <a href="{{ url_for('admin_sidewalk_cctv') }}">인도용 CCTV 보기 </a>
-            </div>
-            <div class="dropdown-content">
-                <a href="{{ url_for('admin_lamp_check')  }}">전체 가로등</a>
-            </div>
-            <div class="dropdown-content">
-                <a href="{{ url_for('admin_load_car') }}">자동차(도로)</a>
-                <a href="{{ url_for('admin_sidewalk_motorcycle') }}">오토바이(인도)</a>
-            </div>
-            <div class="dropdown-content">
-                <a href="{{ url_for('admin_inquiries_view') }}">문의 전체</a>
-                <a href="{{ url_for('admin_inquries_completed') }}">문의 완료</a>
+
+            <div class="menu-item">
+                <a href="#" class="nav-link nav-link-dropdown">문의</a>
+                <div class="dropdown-content" id="inquiry-dropdown">
+                    <a href="{{ url_for('user_dashboard_inquiries_view') }}">문의 목록</a>
+                    <a href="{{ url_for('user_dashboard_inquiries') }}">1:1 문의</a>
+                </div>
             </div>
         </div>
     </nav>
-    {% elif 'user_id' not in session or 'admin_id' not in session %}
+    {% else %}
     <nav class="header-nav">
         <div class="nav-menu">
-            <a href="{{ url_for('index') }}" class="nav-link">HOME</a>
-            <a href="{{ url_for('need_login')}}" class="nav-link">소개</a>
-            <a href="{{ url_for('need_login')}}" class="nav-link">CCTV 보기</a>
-            <a href="{{ url_for('need_login')}}" class="nav-link">문의</a>
-        </div>
-        <div class="dropdown-container">
-            <div class="dropdown-content">
+            <a href="{{ url_for('index') }}" class="nav-link">홈</a>
+            <a href="#" class="nav-link login-required">소개</a>
+
+            <div class="menu-item">
+                <a href="#" class="nav-link nav-link-dropdown">CCTV</a>
+                <div class="dropdown-content" id="cctv-dropdown">
+                    <a href="#" class="login-required">도로용 CCTV</a>
+                    <a href="#" class="login-required">인도용 CCTV</a>
+                </div>
             </div>
-            <div class="dropdown-content">
-            </div>
-            <div class="dropdown-content">
-                <a href="{{ url_for('need_login')}}">도로용 CCTV 보기</a>
-                <a href="{{ url_for('need_login')}}">인도용 CCTV 보기 </a>
-            </div>
-            <div class="dropdown-content">
-                <a href="{{ url_for('need_login')}}">문의 보기</a>
-                <a href="{{ url_for('need_login')}}">문의 하기</a>
+
+            <div class="menu-item">
+                <a href="#" class="nav-link nav-link-dropdown">문의</a>
+                <div class="dropdown-content" id="inquiry-dropdown">
+                    <a href="#" class="login-required">문의 목록</a>
+                    <a href="#" class="login-required">1:1 문의</a>
+                </div>
             </div>
         </div>
     </nav>
@@ -138,31 +134,80 @@
 
     {% block footer %}
     <footer>
-        <div class="footer-left">
-            <p>프로젝트 이름: 스마트 도시 프로젝트</p>
-            <p>프로젝트 팀장: 신준혁</p>
-            <p>프로젝트 팀원: 황수용, 이지엽, 손유빈</p>
-            <p>email : admin@gmail.com</p>
-        </div>
-        
-        <div class="footer-right">
-            <div id="current-date"></div>  <!-- 날짜 표시 -->
-            
+        <div class="footer-content">
+            <div class="footer-left">
+                <p>프로젝트 : 스마트 도시 | 팀장 : 신준혁 | 팀원 : 황수용, 이지엽, 손유빈, 안기부</p>
+            </div>
+
             {% if 'user_id' in session %}
-            <div class="delete-section">
-                <form action="{{ url_for('user_dashboard_delete_user') }}" method="get">
-                    <button type="submit" class="delete-btn btn btn-danger">회원 탈퇴</button>
-                </form>
+            <div class="footer-right">
+                <div class="delete-section">
+                    <form action="{{ url_for('user_dashboard_delete_user') }}" method="get">
+                        <button type="submit" class="delete-btn btn btn-danger">회원 탈퇴</button>
+                    </form>
+                </div>
             </div>
             {% endif %}
         </div>
     </footer>
     {% endblock %}
-    
+
+    <!-- 로그인 필요 알림 모달 -->
+    <div id="login-alert" class="login-alert">
+        <div class="login-alert-content">
+            <span class="close-alert">&times;</span>
+            <p>로그인이 필요한 서비스입니다. 로그인하시겠습니까?</p>
+            <div class="login-alert-buttons">
+                <button id="go-to-login" class="btn btn-primary">로그인하기</button>
+                <button id="close-alert-btn" class="btn btn-secondary">취소</button>
+            </div>
+        </div>
+    </div>
 
     <script src="https://cdn.jsdelivr.net/npm/swiper/swiper-bundle.min.js"></script>
     <script src="{{ url_for('static', filename='js/slider.js') }}"></script>
 
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // 로그인 필요 알림 기능
+        const loginRequiredLinks = document.querySelectorAll('.login-required');
+        const loginAlert = document.getElementById('login-alert');
+        const closeAlert = document.querySelector('.close-alert');
+        const goToLogin = document.getElementById('go-to-login');
+        const closeAlertBtn = document.getElementById('close-alert-btn');
+        
+        // 로그인 필요 링크 클릭 이벤트
+        loginRequiredLinks.forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                loginAlert.style.display = 'flex';
+            });
+        });
+        
+        // 알림 닫기 이벤트
+        closeAlert.addEventListener('click', function() {
+            loginAlert.style.display = 'none';
+        });
+        
+        closeAlertBtn.addEventListener('click', function() {
+            loginAlert.style.display = 'none';
+        });
+        
+        // 로그인 페이지로 이동 이벤트
+        goToLogin.addEventListener('click', function() {
+            window.location.href = "{{ url_for('login') }}";
+        });
+        
+        // ESC 키로 알림 닫기
+        window.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape' && loginAlert.style.display === 'flex') {
+                loginAlert.style.display = 'none';
+            }
+        });
+    });
+    </script>
+
     {% block extra_js %}{% endblock %}
 </body>
+
 </html>

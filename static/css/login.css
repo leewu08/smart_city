@@ -1,4 +1,4 @@
-/* static/css/login_page.css - 다크 모드 및 라이트 모드 지원 */
+/* login.css */
 
 :root {
     --background-color: #f8f9fa;
@@ -28,8 +28,9 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    min-height: calc(100vh - 350px);
+    min-height: calc(100vh - 200px);
     background-color: var(--background-color);
+    transition: background-color 0.8s ease;
 }
 
 .login-form {
@@ -39,6 +40,7 @@
     box-shadow: 0 10px 30px var(--shadow-color);
     width: 100%;
     max-width: 420px;
+    transition: background-color 0.8s ease, box-shadow 0.8s ease;
 }
 
 .login-form h2 {
@@ -47,6 +49,7 @@
     color: var(--text-color);
     font-size: 28px;
     font-weight: 600;
+    transition: color 0.8s ease;
 }
 
 .login-form .form-group {
@@ -58,6 +61,7 @@
     margin-bottom: 8px;
     color: var(--text-color);
     font-weight: 500;
+    transition: color 0.8s ease;
 }
 
 .login-form input[type="text"],
@@ -69,7 +73,7 @@
     font-size: 16px;
     background-color: var(--input-background);
     color: var(--text-color);
-    transition: border-color 0.3s ease;
+    transition: border-color 0.3s ease, background-color 0.8s ease, color 0.8s ease;
 }
 
 .login-form input[type="text"]:focus,
@@ -115,41 +119,10 @@
     text-decoration: underline;
 }
 
-/* 플래시 메시지 */
-.flash-message {
-    position: fixed;
-    top: 20px;
-    left: 50%;
-    transform: translateX(-50%);
-    padding: 15px 25px;
-    border-radius: 5px;
-    font-size: 16px;
-    z-index: 1000;
-    width: 450px;
-    height: 70px;
-    box-shadow: 0 4px 6px var(--shadow-color);
-    opacity: 0;
-    transition: opacity 0.5s ease-in-out;
-    text-align: center;
-    background-color: var(--input-background);
-    color: var(--text-color);
-}
-
-.flash-message.show {
-    opacity: 1;
-}
-
-.flash-message.success {
-    background-color: green;
-    color: white;
-}
-
-.flash-message.error {
-    background-color: red;
-    color: white;
-}
-
-.flash-message.warning {
-    background-color: #FF9800;
-    color: white;
+/* 미디어 쿼리 (768px 이하) */
+@media (max-width: 768px) {
+    .login-form {
+        padding: 30px 20px;
+        margin: 0 15px;
+    }
 }
