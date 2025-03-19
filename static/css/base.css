@@ -379,7 +379,8 @@ footer {
 .footer-content {
     width: 90%;
     display: flex;
-    justify-content: center; /* 푸터 내용 중앙 정렬 */
+    justify-content: space-between; /* 양쪽 정렬로 변경 */
+    align-items: center;
     position: relative; /* 상대 위치 */
 }
 
@@ -387,7 +388,6 @@ footer {
 .footer-left {
     text-align: center;
     white-space: nowrap; /* 텍스트 줄바꿈 방지 */
-    flex: 1; /* 중앙 정렬을 위한 flex 설정 */
 }
 
 .footer-left p {
@@ -397,10 +397,10 @@ footer {
 
 /* 푸터 오른쪽 영역 */
 .footer-right {
-    position: absolute;
-    right: 30px; /* 오른쪽에서 살짝 여백 */
-    top: 50%;
-    transform: translateY(-50%);
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
 }
 
 /* 회원 탈퇴 섹션 */
@@ -411,6 +411,13 @@ footer {
 .delete-section .delete-btn {
     padding: 8px 15px; /* 버튼 패딩 증가 */
     font-size: 14px; /* 폰트 크기 조정 */
+}
+
+/* 현재 날짜 표시 */
+#current-date {
+    font-size: 14px;
+    color: #ddd;
+    margin-bottom: 5px;
 }
 
 /* 대시보드 위젯 스타일 - 메인 페이지에서도 표시되도록 */
@@ -859,6 +866,66 @@ footer {
     }
 }
 
+/* 관리자 메뉴를 위한 추가 스타일 */
+/* 관리자 드롭다운 메뉴 스타일 */
+#admin-cctv-dropdown,
+#admin-lamp-dropdown,
+#admin-monitor-dropdown,
+#admin-inquiry-dropdown {
+    min-width: 180px; /* 드롭다운 메뉴 너비 조정 */
+}
+
+/* 관리자 메뉴 특별 스타일 - 더 강조된 느낌을 위해 */
+.admin-menu-highlight {
+    background-color: #f8f9fa;
+    border-left: 3px solid #007bff;
+}
+
+/* 관리자 메뉴 호버 효과 */
+.admin-menu-highlight:hover {
+    background-color: #e9ecef;
+    border-left: 3px solid #0056b3;
+}
+
+/* 다크모드에서 관리자 메뉴 스타일 */
+.dark-mode .admin-menu-highlight {
+    background-color: #383838;
+    border-left: 3px solid #ffcc00;
+}
+
+.dark-mode .admin-menu-highlight:hover {
+    background-color: #444444;
+    border-left: 3px solid #ffd700;
+}
+
+/* 모니터링 메뉴 강조 */
+.monitor-menu-alert {
+    position: relative;
+}
+
+.monitor-menu-alert::after {
+    content: '';
+    position: absolute;
+    width: 8px;
+    height: 8px;
+    background-color: #ff4d4d;
+    border-radius: 50%;
+    top: 10px;
+    right: 10px;
+}
+
+/* 관리자 영역 강조를 위한 추가 스타일 */
+.admin-area {
+    background-color: #f5f8ff; /* 관리자 영역 배경색 */
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+}
+
+.dark-mode .admin-area {
+    background-color: #363c4a; /* 다크모드에서 관리자 영역 배경색 */
+}
+
 /* 반응형 조정 */
 @media (max-width: 1400px) {
     .swiper-button-next {
@@ -878,6 +945,10 @@ footer {
     .swiper-button-prev {
         left: -20px; /* 더 작은 화면에서 화살표 위치 조정 */
     }
+    
+    .nav-menu {
+        gap: clamp(0.8rem, 5vw, 5rem); /* 메뉴 간격 줄임 */
+    }
 }
 
 @media (max-width: 992px) {
@@ -888,7 +959,32 @@ footer {
     .swiper-button-prev {
         left: 10px; /* 작은 화면에서는 슬라이더 내부로 이동 */
     }
-}
+    
+    .header-nav {
+        height: auto !important; /* 모바일에서 높이 자동 조정 */
+        padding-bottom: 10px;
+    }
+    
+    .nav-menu {
+        flex-wrap: wrap;
+        justify-content: flex-start;
+        gap: 0.5rem;
+    }
+    
+    .menu-item {
+        width: auto;
+        margin-right: 10px;
+    }
+    
+    .dropdown-content {
+        width: 200px;
+        left: 0;
+        transform: none;
+    }
+    
+    .menu-item:hover .dropdown-content {
+        transform: translateY(0);
+    }
 }
 
 @media (max-width: 768px) {
@@ -916,11 +1012,7 @@ footer {
         margin-bottom: 10px;
     }
 
-    .logo {
-        height: 50px; /* 작은 화면에서 고정 크기 */
-    }
-
-    .logo-dark {
+    .logo, .logo-dark {
         height: 50px; /* 작은 화면에서 고정 크기 */
     }
 
