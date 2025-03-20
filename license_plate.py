@@ -161,6 +161,6 @@ def send_alert_to_police(plate_text, image_path):
         print(f"❌ 경찰서 서버 전송 오류: {e}")
 
 
-# 백그라운드 실행을 위한 스레드 시작
-threading.Thread(target=fetch_stream, daemon=True).start()
-threading.Thread(target=detect_license_plate, daemon=True).start()
+if __name__ == "__main__":
+    threading.Thread(target=fetch_stream, daemon=True).start()
+    threading.Thread(target=detect_license_plate, daemon=True).start()
