@@ -650,7 +650,7 @@ class DBManager:
             if table_name == "road_sensors":
                 sql = f"""
                 INSERT INTO {table_name} 
-                (street_light_id, main_light_level, sub1_light_level_, sub2_light_level_, tilt_angle, temperature, humidity, perceived_temperatuere, switch_state)
+                (street_light_id, main_light_level, sub1_light_level_, sub2_light_level_, tilt_angle, temperature, humidity, perceived_temperature, switch_state)
                 VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
                 """
                 values = (
