@@ -470,7 +470,7 @@ def edit_password(userid):
         password = request.form['new_password']
         success = manager.update_user_password(userid, password)
         return jsonify({"success": success})
-    return render_template('edit_password.html', user = user)
+    return render_template('public/edit_password.html', user=user)
     
 
 ## 로그아웃 라우트
@@ -593,11 +593,10 @@ def admin_inquiries_view():
     adminid = session.get('admin_id')
     return render_template("admin/inquiries_view.html", adminid=adminid)
 
-
 ##답변완료된 문의정보 보기
-@app.route('/admin/inquries_completed')
+@app.route('/admin/inquiries_completed')
 @admin_required
-def admin_inquries_completed():
+def admin_inquiries_completed():
     adminid = session.get('admin_id')
     return render_template("admin/inquiries_completed.html", adminid=adminid)
 
@@ -627,6 +626,11 @@ def admin_view_posts_member(userid):
 @app.route('/capture_file/<filename>')
 def capture_file(filename):
     return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
+
+# 고장난 가로등 보기
+@app.route('/admin/broken_light')
+def admin_broken_light():
+    return render_template('admin/broken_light.html')
 
 
 if __name__ == '__main__':
