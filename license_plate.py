@@ -18,7 +18,7 @@ model = YOLO(MODEL_PATH)
 
 # Google Cloud OCR API 설정
 VISION_API_URL = "https://vision.googleapis.com/v1/images:annotate"
-API_KEY = "AIzaSyB7W9s7YDSc8amU9SLcNZMd3YF1kgxUOYM"
+API_KEY = os.getenv("GOOGLE_API_KEY")
 
 # OCR 관련 변수
 ocr_result = ""
