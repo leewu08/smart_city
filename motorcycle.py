@@ -105,6 +105,4 @@ def get_alert_status():
 
 
 # ✅ 오토바이 감지를 위한 백그라운드 스레드 실행
-if __name__ == "__main__":
-    threading.Thread(target=detect_motorcycle, daemon=True).start()
-
+threading.Thread(target=detect_motorcycle, daemon=True).start()
